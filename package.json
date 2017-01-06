@@ -1,0 +1,12 @@
+{
+  "name": "portal",
+  "version": "0.0.1",
+  "description": "A customizable service portal/fulfillment tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+	"start": "node index"
+  },
+  "author": "James Miner <immrama87@gmail.com>",
+  "license": "UNLICENSED"
+}
