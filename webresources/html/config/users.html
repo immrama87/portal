@@ -1,0 +1,71 @@
+<div class="col-xs-12">
+	<h2>User Configuration</h2>
+	
+	<table id="users">
+	</table>
+	
+	<button class="btn btn-primary btn-lg btn-block" id="add-user">Add User</button>
+</div>
+
+<div id="user-config" class="hide">
+	<div class="col-xs-4" id="user-form">
+		<div class="panel">
+			<strong>User Details</strong>
+			<form class="config">
+				<div class="input-group">
+					<div class="input-label required">Directory:</div>
+					<select class="input-field" id="user-directory">
+						<option>Loading user directories...</option>
+					</select>
+				</div>
+				<div class="input-group">
+					<div class="input-label required">Username:</div>
+					<input class="input-field" id="user-username"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label required">First Name:</div>
+					<input class="input-field" id="user-fn"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label required">Last Name:</div>
+					<input class="input-field" id="user-ln"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">Email Address:</div>
+					<input class="input-field" id="user-email"/>
+				</div>
+				
+				<button class="btn-link" id="change-password">Change Password</button>
+				<div class="hide" id="pass-form">
+					<div class="input-group">
+						<div class="input-label required">Password:</div>
+						<input class="input-field" type="password" id="user-password"/>
+					</div>
+					<div class="input-group">
+						<div class="input-label required">Confirm Password:</div>
+						<input class="input-field" type="password" id="user-pass-confirm"/>
+					</div>
+				</div>
+				
+				<section class="buttons-container">
+					<button id="user-details-submit" class="btn btn-primary">Save</button>
+					<button id="user-details-cancel" class="btn btn-secondary">Cancel</button>
+				</section>
+			</form>
+		</div>
+	</div>
+
+	<div class="col-xs-4" id="group-form">
+		<div class="panel">
+			<strong>Group Membership</strong>
+			<div class="additive-list" id="groups-list" attr-name="Group" data-key="name" data-text="displayName" search-exclude="directory,readonly"/>
+		</div>
+	</div>
+
+	<div class="col-xs-4" id="roles-form">
+		<div class="panel">
+			<strong>Attached Roles</strong>
+			<div class="additive-list" id="roles-list" attr-name="Attached Role" data-key="roleId" data-text="name" search-exclude="roleId"/>
+		</div>
+	</div>
+</div>

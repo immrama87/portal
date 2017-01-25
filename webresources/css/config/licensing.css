@@ -1,0 +1,12 @@
+div#license-status.unlicensed,
+div#license-status.expired{
+	color:#FF0000;
+}
+
+div#license-status.expiring{
+	color:#FF9900;
+}
+
+div#license-status.valid{
+	color:#009900;
+}

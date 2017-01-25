@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="/base/main.css"/>
+	</head>
+	<body>
+		<section class="header">
+			<div class="row">
+				<div class="col-md-2">
+					<img src="/column-technologies.png" alt="Column Technologies"/>
+				</div>
+				<div class="container">
+					<h1>Portal Configuration</h1>
+				</div>
+			</div>
+		</section>
+		<section class="content container">
+			#require("config.nextStep");
+		</section>
+	</body>
+</html>

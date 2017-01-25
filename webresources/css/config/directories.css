@@ -1,0 +1,35 @@
+div#directories-list{
+	height:50%;
+}
+
+div#directories-list div.directory{
+	width:85%;
+	margin-left:5%;
+	height:3em;
+	font-size:1.5em;
+	padding-left:1em;
+	border-radius:0.5em;
+	cursor:pointer;
+}
+
+div#directories-list div.directory:hover{
+	background:#8999A0;
+	color:#d6d9db;
+}
+
+div#directories-list div.directory span.text{
+	display:table-cell;
+	height:3em;
+	vertical-align:middle;
+}
+
+div#directories-list div#add-directory{
+	color:#8999A0;
+	border:1px dashed #8999A0;
+}
+
+div#directories-list div#add-directory:hover{
+	color:#455560;
+	border-color:#455560;
+	background:none;
+}

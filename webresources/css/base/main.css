@@ -1,0 +1,360 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css?family=Cutive+Mono');
+
+body,html{
+	width:100%;
+	height:100%;
+	margin:0;
+	padding:0;
+	font-size:1em;
+	font-family:'Roboto', Arial,Verdana,sans-serif;
+	overflow:hidden;
+	background:#B0B7BC;
+}
+
+section.header{
+	height:4.5em;
+	padding-top:0.5em;
+	background:#455560;
+	color:#B0B7BC;
+}
+
+section.header h1, section.header h2,
+section.header h3, section.header h4,
+section.header h5, section.header h6{
+	margin-top:0;
+	font-family:"Century Gothic";
+	font-weight:normal;
+}
+
+section.header h1{font-size:2.5em;}
+section.header h2{font-size:2.25em;}
+section.header h3{font-size:2em;}
+section.header h4{font-size:1.5em;}
+section.header h5{font-size:1.25em;}
+section.header h6{font-size:1em;}
+
+section.content{
+	color:#455560;
+	height:calc(100% - 4.5em);
+}
+
+section.content div.sidebar-1{
+	height:100%;
+	background:#677780;
+	padding:0;
+	z-index:100;
+	-webkit-box-shadow: 5px 0px 15px 0px rgba(0,0,0,0.36);
+	-moz-box-shadow: 5px 0px 15px 0px rgba(0,0,0,0.36);
+	box-shadow: 5px 0px 15px 0px rgba(0,0,0,0.36);
+}
+
+section.content div.sidebar-1 div.link{
+	width:100%;
+	height:4em;
+	font-size:1.25em;
+	padding-left:0.5em;
+	cursor:pointer;
+	color:#B0B7BC;
+}
+
+section.content div.sidebar-1 div.link span.text,
+section.content div.frame div.sidebar-2 div.link span.text{
+	display:table-cell;
+	height:4em;
+	vertical-align:middle;
+}
+
+section.content div.sidebar-1 div.link:hover,
+section.content div.sidebar-1 div.link.selected{
+	background:#8999A0;
+	color:#455560;
+}
+
+section.content div.frame{
+	height:100%;
+	padding:0;
+	padding-top:1em;
+}
+
+section.content div.frame div.panel{
+	background:#d6d9db;
+	padding:1em;
+	border-radius:0.5em;
+	box-shadow:0.25em 0.25em 0.05em rgba(0,0,0,0.1);
+}
+
+@keyframes slide-in{
+	0% {transform: translateX(-100%);}
+	100% {transform: translateX(0%);}
+}
+
+@keyframes slide-out{
+	0% {transform: translateX(0%);}
+	100% {transform: translateX(-100%);}
+}
+
+section.content div.frame div.sidebar-2{
+	height:100%;
+	position:absolute;
+	top:0;
+	left:0;
+	background:#8999A0;
+	padding:0;
+	z-index:99;
+	-webkit-box-shadow: 5px 0px 15px 0px rgba(0,0,0,0.27);
+	-moz-box-shadow: 5px 0px 15px 0px rgba(0,0,0,0.27);
+	box-shadow: 5px 0px 15px 0px rgba(0,0,0,0.27);
+	animation: slide-in 0.5s forwards;
+}
+
+section.content div.frame div.sidebar-2.out{
+	animation: slide-out 0.5s forwards;
+}
+
+section.content div.frame div.sidebar-2 div.slide-button{
+	font-size:1.5em;
+	width:1.5em;
+	height:1.5em;
+	padding:0.25em;
+	position:absolute;
+	top:0;
+	right:-1.5em;
+	background:#8999A0;
+	border-top-right-radius:0.5em;
+	border-bottom-right-radius:0.5em;
+	box-shadow: 0.25em 0em 0.15em rgba(0,0,0,0.27);
+	cursor:pointer;
+}
+
+section.content div.frame div.sidebar-2 div.link{
+	width:100%;
+	height:4em;
+	font-size:1.25em;
+	padding-left:0.5em;
+	cursor:pointer;
+	color:#455560;
+}
+
+section.content div.frame div.sidebar-2 div.link:hover,
+section.content div.frame div.sidebar-2 div.link.selected{
+	background:#B0B7BC;
+}
+
+section.content div.frame div#frame{
+	height:100%;
+	overflow-y:auto;
+}
+
+*.config div.input-group{
+	width:100%;
+	margin-bottom:1em;
+}
+
+*.config div.input-group div.input-label{
+	width:30%;
+	display:inline-block;
+}
+
+*.config div.input-group.block-group div.input-label{
+	display:block;
+}
+
+*.config div.input-group div.input-label.required{
+	font-weight:bold;
+}
+
+*.config div.input-group *.input-field{
+	width:65%;
+	display:inline-block;
+	font-size:1em;
+	padding:0.25em;
+	border-radius:0.5em;
+	outline:none;
+	border:1px solid #B0B7BC;
+	box-shadow: inset 0.25em 0.25em 0.15em rgba(0,0,0,0.1);
+}
+
+*.config div.input-group.block-group *.input-field{
+	width:100%;
+}
+
+*.config div.input-group *.input-field[disabled]{
+	background:#B0B7BC;
+	color:#FFFFFF;
+}
+
+*.config div.input-group textarea{
+	resize:none;
+}
+*.config div.input-group textarea.small{height:3em;}
+*.config div.input-group textarea.medium{height:5em;}
+*.config div.input-group textarea.large{height:7em;}
+*.config div.input-group textarea.massive{height:10em;}
+
+*.config div.input-group button.file-button{
+	margin-right:1em;
+	max-width:calc(16.25% - 1em);
+}
+
+*.config div.input-group span.file-name{
+	margin-right:1em;
+	max-width:calc(32.5% - 1em);
+}
+
+*.config div.detail-group{
+	width:100%;
+	vertical-align:top;
+}
+
+*.config div.detail-group div.detail-label{
+	width:30%;
+	color:#8999A0;
+	display:inline-block;
+	vertical-align:top;
+}
+
+*.config div.detail-group.block-group div.detail-label{
+	width:100%;
+	display:block;
+}
+
+*.config div.detail-group div.detail-value{
+	width:65%;
+	display:inline-block;
+	vertical-align:top;
+}
+
+*.config div.detail-group.block-group div.detail-value{
+	width:100%;
+	display:block;
+}
+
+*.config div.detail-group.editable div.detail-value{
+	width: calc(65% - 1em);
+}
+
+*.config div.detail-group.editable div.edit{
+	width:1em;
+	font-size:1em;
+	display:inline-block;
+	cursor:pointer;
+}
+
+*.config div.detail-group.editable div.edit:hover{
+	color:#8999A0;
+}
+
+form.config section.buttons-container{
+	text-align:right;
+}
+
+form.config section.buttons-container button.btn-secondary{
+	border:1px solid #B0B7BC;
+}
+
+div.additive-list{
+	font-size:1.25em;
+	background:#FFFFFF;
+	padding:0.45em;
+	border-radius:0.5em;
+	position:relative;
+	z-index:50;
+}
+
+div.additive-list.non-styled{
+	background:inherit;
+	color:inherit;
+}
+
+div.additive-list button{
+	font-size:1em;
+	border-radius:0.5em;
+}
+
+div.additive-list.non-styled button{
+	background:#337ab7;
+	color:#FFFFFF;
+	border:1px solid #2e6da4;
+}
+
+div.additive-list div.option{
+	margin-bottom:0.25em;
+	padding-left:0.5em;
+	padding-right:0.5em;
+	cursor:default;
+}
+
+div.additive-list div.option.locked{
+	color:#B0B7BC;
+}
+
+div.additive-list div.option span.remove{
+	float:right;
+	color:#B0B7BC;
+	cursor:pointer;
+}
+
+div.additive-list.non-styled div.option span.remove{
+	color:inherit;
+}
+
+div.additive-list div.option span.remove:hover{
+	color:#000000;
+}
+
+div.additive-list div.option div.hover-text{
+	position:absolute;
+	font-size:0.75em;
+	background:#B0B7BC;
+	color:#FFFFFF;
+	padding:1em;
+	border-radius:0.5em;
+}
+
+div.additive-list div.option div.hover-text div.caret{
+	width:0;
+	height:0;
+	border-left:0.5em solid transparent;
+	border-right:0.5em solid transparent;
+	border-top:0.5em solid transparent;
+	border-bottom:0.5em solid #B0B7BC;
+	position:absolute;
+	left:2em;
+	top:-0.75em;
+}
+
+div.additive-list input.new-item{
+	width:100%;
+	outline:none;
+}
+
+div.additive-list div.matches{
+	font-size:0.8em;
+	position:absolute;
+	background:#FFFFFF;
+	width:calc(100% - 1em);
+	box-shadow:0.25em 0.25em 0.15em rgba(0,0,0,0.1);
+	cursor:pointer;
+}
+
+div.additive-list div.matches div.match.selected{
+	background:#6666FF;
+	color:#FFFFFF;
+}
+
+button.btn-dashed{
+	background:none;
+	border:1px dashed #B0B7BC;
+	color:#B0B7BC;
+}
+
+div.code{
+	margin-top:1em;
+	margin-bottom:1em;
+	padding:0.5em;
+	border-radius:0.5em;
+	font-family: 'Cutive Mono', monospace;
+	background:white;
+	box-shadow:inset 0.25em 0.25em 0.15em rgba(0,0,0,0.1);
+}

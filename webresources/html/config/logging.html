@@ -1,0 +1,50 @@
+<h2>Logging Configuration</h2>
+<section class="col-xs-4">
+	<div class="panel">
+		<strong>Loggers</strong>
+		<div id="loggers">
+		
+		</div>
+	</div>
+</section>
+
+<section class="col-xs-4 hide" id="logger-details">
+	<div class="panel config">
+		<div class="detail-group block-group">
+			<div class="detail-label">Appenders</div>
+			<div class="detail-value" id="log-appenders"></div>
+		</div>
+		<div class="detail-group editable">
+			<div class="detail-label">Log Level</div>
+			<div class="detail-value" id="log-level"></div>			
+			<div class="edit">
+				<i class="fa fa-pencil-square-o"/>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="col-xs-4 hide" id="appender-details">
+	<div class="panel config" id="appender-details-form">
+	</div>
+</section>
+
+<section class="col-xs-12 hide" id="log-contents">
+	<div class="panel config">
+		<strong>Log Contents</strong>
+		<div class="input-group">
+			<div class="input-label">Number of Lines to Show:</div>
+			<select class="input-field" id="num-lines">
+				<option value="10">10</option>
+				<option value="25">25</option>
+				<option value="50">50</option>
+			</select>
+		</div>
+		<div class="code" id="log-lines">
+		
+		</div>
+		
+		<button class="btn btn-primary" id="log-lines-previous">Previous</button>
+		<button class="btn btn-primary" id="log-lines-next">Next</button>
+	</div>
+</section>
