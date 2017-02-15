@@ -2,52 +2,160 @@ var util = require("util");
 
 var AuthorizationService = (function(){
 	var as = {};
+	var authRules = {};
 	
-	as.setupRoutes = function(app){
-		server.api.createParameter("groupId");
-		server.api.registerRoute("auth/groups/:groupId/roles")
-			.get(function(req, res){
-				var session = server.db.getSession();
-				var statement = server.db.generatePreparedStatement({
-					action:	"read",
-					table:	"roles",
-					fields:	["name", "roleId"],
-					query:	{groupMembers: "#[#{groupId}]"}
-				})
-				.withParam("groupId", req.groupId);
-				
-				session.execute(statement, function(err, findResponse){
-					if(err){
-						app.serveError(500, err, res);
-					}
-					else {
-						res.status(200).end(JSON.stringify(findResponse.getItems()));
-					}
-				});
+	as.configureRouteAuthorization = function(app, route, roles, handleFail){
+		if(!app || !route || !roles){
+			var exc = new AuthorizationServiceException({msg: "Could not configure route authorization rule. A server, route and role(s) specification are required"});
+			server.errorLog.fatal(exc, function(){
+				throw exc;
 			});
+		}
+		
+		var rule = {};
+		if(!Array.isArray(roles)){
+			roles = [roles];
+		}
+		rule.server = app;
+		rule.roles = roles;
+		
+		if(handleFail && typeof handleFail == "function"){
+			rule.handleFail = handleFail;
+		}
+		
+		authRules[route] = rule;
+	}
+	
+	as.isAuthorized = function(req, res, next){
+		var session = req.session;
+		var routeRules = [];
+		var index = req.url.length;
+		while(index > 0){
+			var urlSlice = req.url.substring(0, index);
+			if(authRules.hasOwnProperty(urlSlice)){
+				routeRules.push(authRules[urlSlice]);
+			}
 			
-		server.api.createParameter("username");
-		server.api.registerRoute("auth/users/:username/roles")
-			.get(function(req, res){
-				var session = server.db.getSession();
-				var statement = server.db.generatePreparedStatement({
-					action:	"read",
-					table:	"roles",
-					fields:	["name", "roleId"],
-					query:	{members:	"#[#{username}]"}
-				})
-				.withParam("username", req.username);
+			index = req.url.lastIndexOf("/", index-1);
+		}
+		
+		if(routeRules.length > 0){
+			as.getRolesForUser(session.username, function(err, userRoles){
+				if(err){
+					routeRules[0].server.serveError(500, err, res);
+				}
+				else {
+					var roles = [];
+					var iter = userRoles.iterator();
+					while(iter.hasNext()){
+						roles.push(iter.next().roleId);
+					}
+					
+					session.getGroups(function(groupsList){
+						var groupRolesCollectionResponse = new server.utils.CollectionResourceResponse(groupsList, function(group, groupNext){
+							as.getRolesForGroup(group, function(groupErr, groupRoles){
+								if(groupErr){
+									groupNext(groupErr);
+								}
+								else {
+									var groupIter = groupRoles.iterator();
+									while(groupIter.hasNext()){
+										roles.push(groupIter.next().roleId);
+									}
+									
+									groupNext();
+								}
+							});
+						})
+						.oncomplete(function(data){
+							var valid = true;
+							var failureRoutines = [];
+							for(var i=0;i<routeRules.length;i++){
+								var ruleValid = false;
+								for(var j=0;j<routeRules[i].roles.length;j++){
+									if(roles.indexOf(routeRules[i].roles[j]) > -1){
+										ruleValid = true;
+										break;
+									}
+								}
+								
+								if(!ruleValid){
+									valid = false;
+									if(routeRules[i].hasOwnProperty("handleFail")){
+										failureRoutines.push(routeRules[i].handleFail);
+									}
+									
+									break;
+								}
+							}
+							
+							if(valid){
+								next();
+							}
+							else {
+								for(var i=0;i<failureRoutines.length;i++){
+									failureRoutines[i](req);
+								}
+								
+								routeRules[0].server.serveError(401, undefined, res);
+							}
+						})
+						.onfail(function(err){
+							routeRules[0].server.serveError(500, err, res);
+						})
+						.process();
+					});
+				}
+			});	
+		}
+		else {
+			next();
+		}
+		
+		/*var session = req.session;
+		as.getRolesForUser(session.username, function(err, findResponse){
+			if(err){
+				next(err);
+			}
+			else {
+				var authorized = false;
+				var iter = findResponse.iterator();
+				while(iter.hasNext()){
+					if(iter.next().roleId == role){
+						authorized = true;
+						break;
+					}
+				}
 				
-				session.execute(statement, function(err, findResponse){
-					if(err){
-						app.serveError(500, err, res);
-					}
-					else {
-						res.status(200).end(JSON.stringify(findResponse.getItems()));
-					}
-					session.close();
-				});
-			});
+				if(!authorized){
+					var groups = session.getGroups();
+					as.getGroupsForRole(role, function(groupErr, groupMembers){
+						if(groupErr){
+							next(groupErr);
+						}
+						else {
+							for(var i=0;i<groupMembers.length;i++){
+								if(groups.indexOf(groupMembers[i]) > -1){
+									authorized = true;
+									break;
+								}
+							}
+							
+							if(!authorized){
+								app.serveError(401, undefined, res);
+								return;
+							}
+							else {
+								next();
+							}
+						}
+					});
+				}	
+				else {
+					next();
+				}
+			}
+		});*/
 	}
 	
 	as.roleExists = function(roleId, next){
@@ -61,7 +169,12 @@ var AuthorizationService = (function(){
 		.withParam("roleId", roleId);
 		
 		session.execute(statement, function(err, findResponse){
-			next(err, (findResponse.getItems().length > 0));
+			if(err){
+				next(err);
+			}
+			else {
+				next(undefined, (findResponse.getItems().length > 0));
+			}
 			session.close();
 		});
 	}
@@ -100,6 +213,38 @@ var AuthorizationService = (function(){
 		
 		session.execute(statement, function(err){
 			next(err);
+			session.close();
+		});
+	}
+	
+	as.getRolesForUser = function(username, next){
+		var session = server.db.getSession();
+		var statement = server.db.generatePreparedStatement({
+			action:	"read",
+			table:	"roles",
+			fields:	["name", "roleId"],
+			query:	{members:	"#[#{username}]"}
+		})
+		.withParam("username", username);
+		
+		session.execute(statement, function(err, findResponse){
+			next(err, findResponse);
+			session.close();
+		});
+	}
+	
+	as.getRolesForGroup = function(groupId, next){
+		var session = server.db.getSession();
+		var statement = server.db.generatePreparedStatement({
+			action: "read",
+			table:	"roles",
+			fields:	["name", "roleId"],
+			query:	{groupMembers:	"#[#{groupId}]"}
+		})
+		.withParam("groupId", groupId);
+		
+		session.execute(statement, function(err, findResponse){
+			next(err, findResponse);
 			session.close();
 		});
 	}

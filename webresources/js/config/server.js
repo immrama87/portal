@@ -8,8 +8,8 @@ $(function(){
 });
 
 function initializeForms(){
-	initializeAdminForm();
 	initializeUserForm();
+	initializeAdminForm();
 	
 	$.ajax({
 		method:		"get",
@@ -20,13 +20,42 @@ function initializeForms(){
 		populateForms(response);
 	})
 	.fail(function(xhr, status, err){
-		alert("Error retrieving current server configuration. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error retrieving current server configuration.", true, err);
+	});
+}
+
+function initializeUserForm(){
+	Blueprint.utils.FileUpload("user-https-key");
+	Blueprint.utils.FileUpload("user-https-cert");
+	$("#user-transport").on("change", function(evt){
+		var httpPort = 80;
+		var httpsPort = 443;
+		if($("#user-transport").val() == "https"){
+			$("#user-https-key-group").removeClass("hide");
+			$("#user-https-key-group").find("div.input-label").addClass("required");
+			$("#user-https-cert-group").removeClass("hide");
+			$("#user-https-cert-group").find("div.input-label").addClass("required");
+			if($("#user-port").val() == "" || $("#users-port").val() == 80 ){
+				$("#user-port").val(httpsPort);
+			}
+		}
+		else {
+			$("#user-https-key-group").addClass("hide");
+			$("#user-https-key-group").find("div.input-label").removeClass("required");
+			$("#user-https-cert-group").addClass("hide");
+			$("#user-https-cert-group").find("div.input-label").removeClass("required");
+			if($("#user-transport").val() == "http"){
+				if($("#user-port").val() == "" || $("#user-port") == 443){
+					$("#user-port").val(httpPort);
+				}
+			}
+		}
 	});
 }
 
 function initializeAdminForm(){
-	APP.utils.FileUpload("admin-https-key");
-	APP.utils.FileUpload("admin-https-cert");
+	Blueprint.utils.FileUpload("admin-https-key");
+	Blueprint.utils.FileUpload("admin-https-cert");
 	$("#admin-transport").on("change", function(evt){
 		var httpPort = 80;
 		var httpsPort = 443;
@@ -53,57 +82,36 @@ function initializeAdminForm(){
 			}
 		}
 	});
-}
-
-function initializeUserForm(){
-	APP.utils.FileUpload("users-https-key");
-	APP.utils.FileUpload("users-https-cert");
-	$("#users-transport").on("change", function(evt){
-		var httpPort = 80;
-		var httpsPort = 443;
-		if($("#users-transport").val() == "https"){
-			$("#users-https-key-group").removeClass("hide");
-			$("#users-https-key-group").find("div.input-label").addClass("required");
-			$("#users-https-cert-group").removeClass("hide");
-			$("#users-https-cert-group").find("div.input-label").addClass("required");
-			if($("#users-port").val() == "" || $("#users-port").val() == 80 ){
-				$("#users-port").val(httpsPort);
-			}
-		}
-		else {
-			$("#users-https-key-group").addClass("hide");
-			$("#users-https-key-group").find("div.input-label").removeClass("required");
-			$("#users-https-cert-group").addClass("hide");
-			$("#users-https-cert-group").find("div.input-label").removeClass("required");
-			if($("#users-transport").val() == "http"){
-				if($("#users-port").val() == "" || $("#user-port") == 443){
-					$("#users-port").val(httpPort);
-				}
-			}
-		}
-	});
 	
-	$("#users-same-as-admin").on("change", function(evt){
-		if($("#users-same-as-admin").is(":checked")){
-			$("#users-server").find(".input-field, button").attr("disabled", true);
-			$("#users-server").find("div.input-group").each(function(index, el){
-				if($(el).find("#users-same-as-admin").length == 0){
+	$("#admin-same-as-user").on("change", function(evt){
+		if($("#admin-same-as-user").is(":checked")){
+			$("#admin-server").find(".input-field, button").attr("disabled", true);
+			$("#admin-server").find("div.input-group").each(function(index, el){
+				if($(el).find("#admin-same-as-user").length == 0){
 					$(el).addClass("hide");
 				}
 			});
 		}
 		else {
-			$("#users-server").find(".input-field, button").removeAttr("disabled");
-			$("#users-server").find("div.input-group").each(function(index, el){
+			$("#admin-server").find(".input-field, button").removeAttr("disabled");
+			$("#admin-server").find("div.input-group").each(function(index, el){
 				$(el).removeClass("hide");
 			});
 			
-			$("#users-transport").change();
+			$("#admin-transport").change();
 		}
 	});
 }
 
 function populateForms(config){
+	var sameAsUser = true;
+	for(var prop in config.user){
+		if(!(config.user[prop] == config.admin[prop])){
+			sameAsUser = false;
+			break;
+		}
+	}
+	
 	for(var serverId in config){
 		for(var key in config[serverId]){
 			$("#" + serverId + "-" + key).val(config[serverId][key]);
@@ -118,53 +126,55 @@ function populateForms(config){
 		$("#admin-https-cert-group").find("div.input-label").removeClass("required");
 	}
 	
-	$("#users-transport").change();
-	if(config.users.haskey){
-		$("#users-https-key-group").find("div.input-label").removeClass("required");
+	$("#user-transport").change();
+	if(config.user.haskey){
+		$("#user-https-key-group").find("div.input-label").removeClass("required");
 	}
-	if(config.users.hascert){
-		$("#users-https-cert-group").find("div.input-label").removeClass("required");
+	if(config.user.hascert){
+		$("#user-https-cert-group").find("div.input-label").removeClass("required");
 	}
 	
-	if(config.users.sameAsAdmin){
-		$("#users-same-as-admin").attr("checked", true).change();
+	if(sameAsUser){
+		$("#admin-same-as-user").attr("checked", true).change();
 	}
 }
 
 function submitData(){
 	var data = {};
 	data.admin = {};
-	data.users = {};
+	data.user = {};
+	var sameAsUser = false;
 	
-	$("#admin-server").find("*.input-field").each(function(index, el){
-		var key = el.id.substring(("admin-").length);
+	$("#user-server").find("*.input-field").each(function(index, el){
+		var key = el.id.substring(("user-").length);
 		if($(el).val() != "" && el.type != "file"){
-			data.admin[key] = $(el).val();
+			data.user[key] = $(el).val();
 		}
 	});
 	
-	if($("#users-same-as-admin").is(":checked")){
-		data.users.sameAsAdmin = true;
+	if($("#admin-same-as-user").is(":checked")){
+		sameAsUser = true;
+		data.admin = data.user;
 	}
 	else {
-		$("#users-server").find("*.input-field").each(function(index, el){
-			var key = el.id.substring(("users-").length);
+		$("#admin-server").find("*.input-field").each(function(index, el){
+			var key = el.id.substring(("admin-").length);
 			if($(el).val() != "" && el.type != "file"){
-				data.users[key] = $(el).val();
+				data.admin[key] = $(el).val();
 			}
 		});
 	}
 	
-	if(data.admin.transport == "https"){
-		submitAdminKeys(function(err){
+	if(data.user.transport == "https"){
+		submitUserKeys(function(err){
 			if(err){
-				alert("Error uploading Admin server certificate and key files. Please check the system logs for more information.\nError message: " + err);
+				Blueprint.utils.Messaging.alert("Error uploading User server certificate and key files.", true, err);
 			}
 			else {
-				if(data.users.transport == "https" || data.users.sameAsAdmin){
-					submitUserKeys(data.users.sameAsAdmin, function(userKeyErr){
+				if(data.admin.transport == "https" || sameAsUser){
+					submitAdminKeys(sameAsUser, function(userKeyErr){
 						if(err){
-							alert("Error uploading User server certificate and key files. Please check the system logs for more information.\nError message: " + err);
+							Blueprint.utils.Messaging.alert("Error uploading Admin server certificate and key files.", true, err);
 						}
 						else {
 							submitConfig(data);
@@ -178,10 +188,10 @@ function submitData(){
 		});
 	}
 	else {
-		if(data.users.transport == "https" || data.users.sameAsAdmin){
-			submitUserKeys(data.users.sameAsAdmin, function(userKeyErr){
+		if(data.admin.transport == "https"){
+			submitAdminKeys(sameAsUser, function(userKeyErr){
 				if(err){
-					alert("Error uploading User server certificate and key files. Please check the system logs for more information.\nError message: " + err);
+					Blueprint.utils.Messaging.alert("Error uploading Admin server certificate and key files.", true, err);
 				}
 				else {
 					submitConfig(data);
@@ -194,66 +204,91 @@ function submitData(){
 	}
 }
 
-function submitAdminKeys(next){
+function submitUserKeys(next){
 	if(!window.FormData){
 		next("Your browser does not support modern file upload. Please try again using a different browser.");
 		return;
 	}
 	var formData = new FormData();
-	formData.append("cert", document.getElementById("admin-https-cert").files[0]);
-	formData.append("key", document.getElementById("admin-https-key").files[0]);
+	var changed = false;
+	if($("#user-https-cert-group").find("div.input-label").hasClass("required") || document.getElementById("user-https-cert").files.length > 0){
+		formData.append("cert", document.getElementById("user-https-cert").files[0]);
+		changed = true;
+	}
+	if($("#user-https-key-group").find("div.input-label").hasClass("required") || document.getElementById("user-https-key").files.length > 0){
+		formData.append("key", document.getElementById("user-https-key").files[0]);
+		changed = true;
+	}
 	
-	$.ajax({
-		method:			"post",
-		url:			"/rest/v1/config/server/admin/certs",
-		data:			formData,
-		processData:	false,
-		contentType:	false
-	})
-	.done(function(response){
-		next();
-	})
-	.fail(function(xhr, status, err){
-		next(err);
-	});
-}
-
-function submitUserKeys(sameAsAdmin, next){
-	if(!window.FormData){
-		next("Your browser does not support modern file upload. Please try again using a different browser.");
-		return;
-	}
-	var formData = new FormData();
-	if(!sameAsAdmin){
-		formData.append("cert", document.getElementById("users-https-cert").files[0]);
-		formData.append("key", document.getElementById("users-https-key").files[0]);
+	if(changed){
+		$.ajax({
+			method:			"post",
+			url:			"/rest/v1/config/server/user/certs",
+			data:			formData,
+			processData:	false,
+			contentType:	false
+		})
+		.done(function(response){
+			next();
+		})
+		.fail(function(xhr, status, err){
+			next(err);
+		});
 	}
 	else {
-		formData.append("cert", document.getElementById("admin-https-cert").files[0]);
-		formData.append("key", document.getElementById("admin-https-key").files[0]);
+		next();
+	}
+}
+
+function submitAdminKeys(sameAsUser, next){
+	if(!window.FormData){
+		next("Your browser does not support modern file upload. Please try again using a different browser.");
+		return;
+	}
+	var formData = new FormData();
+	var changed = false;
+	if(!sameAsUser){
+		if($("#admin-https-cert-group").find("div.label").hasClass("required") || document.getElementById("admin-https-cert").files.length > 0){
+			formData.append("cert", document.getElementById("admin-https-cert").files[0]);
+			changed = true;
+		}
+		if($("#admin-https-key-group").find("div.label").hasClass("required") || document.getElementById("admin-https-key").files.length > 0){
+			formData.append("key", document.getElementById("admin-https-key").files[0]);
+			changed = true;
+		}
+	}
+	else {
+		if($("#user-https-cert-group").find("div.label").hasClass("required") || document.getElementById("user-https-cert").files.length > 0){
+			formData.append("cert", document.getElementById("user-https-cert").files[0]);
+			changed = true;
+		}
+		if($("#user-https-key-group").find("div.label").hasClass("required") || document.getElementById("user-https-key").files.length > 0){
+			formData.append("key", document.getElementById("user-https-key").files[0]);
+			changed = true;
+		}
 	}
 	
-	$.ajax({
-		method:			"post",
-		url:			"/rest/v1/config/server/users/certs",
-		data:			formData,
-		processData:	false,
-		contentType:	false
-	})
-	.done(function(response){
+	if(changed){
+		$.ajax({
+			method:			"post",
+			url:			"/rest/v1/config/server/admin/certs",
+			data:			formData,
+			processData:	false,
+			contentType:	false
+		})
+		.done(function(response){
+			next();
+		})
+		.fail(function(xhr, status, err){
+			next(err);
+		});
+	}
+	else {
 		next();
-	})
-	.fail(function(xhr, status, err){
-		next(err);
-	});
+	}
 }
 
 function submitConfig(data){
-	if(data.users.sameAsAdmin){
-		data.users = data.admin;
-		data.users.sameAsAdmin = true;
-	}
-	
 	$.ajax({
 		method:			"post",
 		url:			"/rest/v1/config/server-config",
@@ -261,10 +296,10 @@ function submitConfig(data){
 		contentType:	"application/json"
 	})
 	.done(function(response){
-		alert("Server configuration successfully updated.");
+		Blueprint.utils.Messaging.alert("Server configuration successfully updated.");
 	})
 	.fail(function(xhr, status, err){
-		alert("Error updating server configuration. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error updating server configuration.", true, err);
 	});
 }
 

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Column Technologies Blueprint Configuration Wizard</title>
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+		<link rel="stylesheet" type="text/css" href="/base/main.scss"/>
+		<link rel="stylesheet" type="text/css" href="/base/datatables.config.scss"/>
+		<link rel="stylesheet" type="text/css" href="/config/wizard.scss"/>
+		
+		<script src="https://code.jquery.com/jquery-3.1.1.min.js"
+			integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+			crossorigin="anonymous"></script>
+		<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.2/require.min.js"></script>
+		<script src="/main/app.js"></script>
+		<script src="/config/wizard.js"></script>
+		<script src="/config/wizard.db.js"></script>
+		<script src="/config/wizard.user.js"></script>
+		<script src="/config/wizard.server.js"></script>
+		<script src="/config/wizard.dependencies.js"></script>
+	</head>
+	<body>
+		<section class="header">
+			<div class="row">
+				<div class="col-md-2 logo">
+					<img src="/column-technologies.png" alt="Column Technologies"/>
+				</div>
+				<div class="container">
+					<h1>Blueprint Configuration Wizard</h1>
+				</div>
+			</div>
+		</section>
+		<section class="content">
+			<div class="frame col-xs-12">
+				<div id="frame" class="col-xs-12">
+					<div id="previous-arrow" class="hide">
+						<i class="fa fa-arrow-circle-left"></i>
+					</div>
+					<div class="container panel wizard-dialog hide text-center" wizard-trigger="setupStart">
+						<h2>Thank you for choosing Column Blueprint</h2>
+						<img src="/blueprint-512.png"/>
+						<p><strong>Let's get started by setting up the database connection</strong></p>
+						<button id="setup-start" class="btn btn-primary">Let's Go!</button>
+					</div>
+					<div class="container panel wizard-dialog hide" wizard-trigger="dbDrivers">
+						<h2>Please select a database driver</h2>
+						<table id="database-drivers"></table>
+					</div>
+					<div class="container panel wizard-dialog hide" wizard-trigger="dbDriverSetup">
+						<h2>Please configure the database driver</h2>
+						<div id="db-driver-config" class="config">
+						
+						</div>
+						<section class="buttons-container">
+							<button class="btn btn-primary" id="db-driver-save">Save</button>
+						</section>
+					</div>
+					<div class="container panel wizard-dialog hide" wizard-trigger="dbSave">
+						<div id="db-save-loader"></div>
+					</div>
+					<div class="container panel wizard-dialog hide text-center" wizard-trigger="userStart">
+						<h2>Great! The database is configured and initialized.</h2>
+						<p><i class="fa fa-thumbs-o-up massive"></i></p>
+						<p><strong>Now let's set up a default administrator account.</strong></p>
+						<button id="user-start" class="btn btn-primary">Okay!</button>
+					</div>
+					<div class="container panel wizard-dialog hide config" wizard-trigger="userConfig">
+						<h2>Please enter the following details</h2>
+						<div class="input-group">
+							<div class="input-label required">Username</div>
+							<input class="input-field" id="username" value="blueprint-admin" disabled/>
+						</div>
+						<div class="input-group">
+							<div class="input-label required">Password</div>
+							<input type="password" class="input-field" id="password"/>
+						</div>
+						<div class="input-group">
+							<div class="input-label required">Confirm Password</div>
+							<input type="password" class="input-field" id="password-confirm"/>
+						</div>
+						<div class="input-group">
+							<div class="input-label">Email Address</div>
+							<input class="input-field" id="email"/>
+						</div>
+						<section class="buttons-container">
+							<button class="btn btn-primary" id="user-save">Save</button>
+						</section>
+					</div>
+					<div class="container panel wizard-dialog hide text-center" wizard-trigger="serverStart">
+						<h2>Another step finished!</h2>
+						<p><i class="fa fa-thumbs-o-up massive"></i></p>
+						<p><strong>Now you'll need to configure the servers for administrators and users</strong></p>
+						<button id="server-start" class="btn btn-primary">Let's Go!</button>
+					</div>
+					<div class="container panel wizard-dialog hide config" wizard-trigger="serverUserConfig">
+						<h2>Please configure the User Portal server</h2>
+						<div class="input-group">
+							<div class="input-label required">Transport Method</div>
+							<select class="input-field" id="user-transport">
+								<option></option>
+								<option value="http">HTTP</option>
+								<option value="https">HTTPS</option>
+							</select>
+						</div>
+						
+						<div id="user-https-options" class="hide">
+							<div class="input-group">
+								<div class="input-label required">Key File&nbsp;<i class="fa fa-info-circle"></i></div>
+								<input class="input-field" type="file" id="user-https-key"/>
+							</div>
+							<div class="input-group">
+								<div class="input-label required">Certificate File&nbsp;<i class="fa fa-info-circle"></i></div>
+								<input class="input-field" type="file" id="user-https-cert"/>
+							</div>
+						</div>
+						
+						<div class="input-group">
+							<div class="input-label required">Port</div>
+							<input class="input-field" type="number" min="0" max="65535" id="user-port"/>
+						</div>
+						
+						<section class="buttons-container">
+							<button class="btn btn-primary" id="user-server-save">Save</button>
+						</section>
+					</div>
+					<div class="container panel wizard-dialog hide config" wizard-trigger="serverAdminConfig">
+					<div id="next-arrow" class="hide">
+						<i class="fa fa-arrow-circle-right"></i>
+					</div>
+						<h2>Please configure the Admin Portal server</h2>
+						<div class="input-group">
+							<div class="input-label required">Same Settings as User Portal?</div>
+							<input type="checkbox" id="admin-same-as-user" checked />
+						</div>
+						<div id="admin-server-inputs" class="hide">
+							<div class="input-group">
+								<div class="input-label required">Transport Method</div>
+								<select class="input-field" id="admin-transport">
+									<option></option>
+									<option value="http">HTTP</option>
+									<option value="https">HTTPS</option>
+								</select>
+							</div>
+							
+							<div id="admin-https-options" class="hide">
+								<div class="input-group">
+									<div class="input-label required">Key File&nbsp;<i class="fa fa-info-circle"></i></div>
+									<input class="input-field" type="file" id="admin-https-key"/>
+								</div>
+								<div class="input-group">
+									<div class="input-label required">Certificate File&nbsp;<i class="fa fa-info-circle"></i></div>
+									<input class="input-field" type="file" id="admin-https-cert"/>
+								</div>
+							</div>
+							
+							<div class="input-group">
+								<div class="input-label required">Port</div>
+								<input class="input-field" type="number" min="0" max="65535" id="admin-port"/>
+							</div>
+						</div>
+						
+						<section class="buttons-container">
+							<button class="btn btn-primary" id="admin-server-save">Save</button>
+						</section>
+					</div>
+					<div class="container panel wizard-dialog hide config" wizard-trigger="serverLicenseConfig">
+						<h2>Please license your server</h2>
+						<p><em class="text-muted">To get a new license please visit the <a href="http://localhost:3000/" target="_blank">Blueprint Licensing Portal</a>.</em></p>
+						<div class="detail-group">
+							<div class="detail-label">Server ID</div>
+							<div class="detail-value" id="server-id"></div>
+						</div>
+						<div class="input-group">
+							<div class="input-label required">License Key</div>
+							<textarea class="input-field massive" id="server-license"></textarea>
+						</div>
+						
+						<section class="buttons-container">
+							<button class="btn btn-primary" id="server-license-save">Save</button>
+						</section>
+					</div>
+					<div class="container panel wizard-dialog hide text-center" wizard-trigger="createSystemDependencies">
+						<div id="dependency-loader"></div>
+					</div>
+					<div class="container panel wizard-dialog hide text-center" wizard-trigger="saveConfig">
+						<div id="saving-config">
+							<img src="loading.gif"/>
+							<p><strong>Saving Configuration</strong></p>
+						</div>
+					</div>
+					<div id="next-arrow" class="hide">
+						<i class="fa fa-arrow-circle-right"></i>
+					</div>
+					
+					<div id="wizard-progress"></div>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>

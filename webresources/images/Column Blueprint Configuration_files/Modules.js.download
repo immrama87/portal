@@ -1,0 +1,171 @@
+define("app/Modules", [], function(){
+	var m = {};
+	var activeModule = {};
+	
+	m.loadModules = function(url){
+		$.ajax({
+			method:		"get",
+			url:		url,
+			dataType:	"json"
+		})
+		.done(function(response){
+			generateSidebar(response);
+			
+			checkForActiveModule(response);
+		})
+		.fail(function(xhr, status, err){
+			Blueprint.utils.Messaging.alert("Error retrieving application module configuration.", true, xhr.responseText);
+		});
+	}
+	
+	m.activeModule = function(){
+		return activeModule;
+	}
+	
+	function checkForActiveModule(modules){
+		for(var i=0;i<modules.length;i++){
+			if(window.location.pathname.indexOf(modules[i].baseRoute) > -1){
+				clickSidebarLink(modules[i], "#sidebar", document.getElementById(modules[i].name.replace(/\s/g, "_")));
+			}
+			
+			if(modules[i].hasOwnProperty("submodules")){
+				for(var j=0;j<modules[i].submodules.length;j++){
+					if(window.location.pathname.indexOf(modules[i].submodules[j].baseRoute) > -1){
+						clickSidebarLink(modules[i], "#sidebar", document.getElementById(modules[i].name.replace(/\s/g, "_")));
+						clickSidebarLink(modules[i].submodules[j], "#sub-sidebar", document.getElementById(modules[i].submodules[j].name.replace(/\s/g, "_")));
+					}
+				}
+			}
+		}
+	}
+	
+	function generateSidebar(modules){
+		for(var i=0;i<modules.length;i++){
+			$("#sidebar").append(generateSidebarLink(modules[i]));
+		}
+	}
+
+	function generateSidebarLink(module, parent){
+		parent = parent || "#sidebar";
+		var link = document.createElement("div");
+		link.className = "link";
+		link.id = module.name.replace(/\s/g, "_");
+		
+		var text = document.createElement("span");
+		text.className = "text";
+		$(text).text(module.name);
+		$(link).append(text);
+		
+		$(link).on("click touch", function(evt){
+			clickSidebarLink(module, parent, link);
+		});
+		
+		return link;
+	}
+
+	function clickSidebarLink(module, parent, link){
+		$(parent).find("div.link.selected").removeClass("selected");
+		$(link).addClass("selected");
+		if(module.hasOwnProperty("submodules")){
+			generateSubSidebar(module.submodules);
+		}
+		else {
+			if(parent == "#sidebar"){
+				$("#sub-sidebar").find("div.slide-button").addClass("hide");
+			}
+			$("#sub-sidebar").addClass("out");
+			if(activeModule.hasOwnProperty("destroy")){
+				activeModule.destroy(function(){
+					loadModule(module);
+				});
+			}
+			else {
+				loadModule(module);
+			}
+		}
+	}
+
+	function generateSubSidebar(submodules){
+		$("#sub-sidebar").html("<div class='slide-button fa fa-bars'></div>");
+		for(var i=0;i<submodules.length;i++){
+			$("#sub-sidebar").append(generateSidebarLink(submodules[i], "#sub-sidebar"));
+		}
+		
+		$("#sub-sidebar").find("div.slide-button").removeClass("hide");
+		$("#sub-sidebar").removeClass("hide");
+		$("#sub-sidebar").removeClass("out");
+		
+		$("#sub-sidebar").find("div.slide-button").off("click touch");
+		$("#sub-sidebar").find("div.slide-button").on("click touch", function(evt){
+			$("#sub-sidebar").toggleClass("out");
+		});
+	}
+
+	function loadModule(module){
+		activeModule = {};
+		$(document.head).find("#module-script").remove();
+		$(document.head).find("#module-style").remove();
+		var route = module.baseRoute;
+		if(route != baseRoute){
+			$.ajax({
+				method:		"get",
+				url:		route + ".html",
+				dataType:	"html"
+			})
+			.done(function(response){
+				baseRoute = route;
+				$("#frame").html(response);
+				
+				if(module.hasJs){
+					$.ajax({
+						method:		"get",
+						url:		route + ".js",
+						dataType:	"text",
+						cache: 		true
+					})
+					.done(function(scriptResponse){
+						var script = document.createElement("script");
+						script.id = "module-script";
+						$(script).html(scriptResponse);
+						
+						document.head.appendChild(script);
+					});
+				}
+				
+				if(module.hasCss){
+					$.ajax({
+						method:		"get",
+						url:		route + ".css",
+						dataType:	"text",
+						cache:		true
+					})
+					.done(function(styleResponse){
+						var style = document.createElement("style");
+						style.id = "module-style";
+						$(style).html(styleResponse);
+						
+						document.head.appendChild(style);
+					});
+				}
+				
+				if(module.hasScss){
+					$.ajax({
+						method: 	"get",
+						url:		route + ".scss",
+						dataType:	"text",
+						cache:		true
+					})
+					.done(function(styleResponse){
+						var style = document.createElement("style");
+						style.id = "module-style";
+						$(style).html(styleResponse);
+						
+						document.head.appendChild(style);
+					});
+				}
+			});
+		}
+	}
+	
+	return m;
+});

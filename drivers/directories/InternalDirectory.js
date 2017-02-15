@@ -52,7 +52,7 @@ var InternalDirectory = (function(){
 					next(exc);
 				}
 				else {
-					var exc = new InternalDirectoryException({msg: "No user with username '" + username + "' could be found."});
+					var exc = new InternalDirectoryException({code: 0, msg: "No user with username '" + username + "' could be found."});
 					next(exc);
 				}
 			}
@@ -70,7 +70,12 @@ var InternalDirectory = (function(){
 		.withParam("username", username);
 		
 		session.execute(statement, function(err, findResponse){
-			next(err, (findResponse.getItems().length > 0));
+			if(err){
+				next(err);
+			}
+			else {
+				next(undefined, (findResponse.getItems().length > 0));
+			}
 		});
 	}
 	
@@ -425,6 +430,53 @@ var InternalDirectory = (function(){
 		}
 	}
 	
+	id.authenticateUser = function(username, password, next){
+		var session = server.db.getSession();
+		var findStatement = server.db.generatePreparedStatement({
+			action:	"read",
+			table:	"users",
+			fields:	["createDate", "secret", "password"],
+			query:	{username: "#{username}"}
+		})
+		.withParam("username", username);
+		
+		session.execute(findStatement, function(err, findResponse){
+			if(err){
+				next(err);
+			}
+			else {
+				if(findResponse.getItems().length == 0){
+					var exc = new InternalDirectoryException({msg: "No user with username '" + username + "' could be found."});
+					next(exc);
+					session.close();
+				}
+				else {
+					var user = findResponse.iterator().next();
+					var passToMatch = encryptPassword(username, password, user.createDate, user.secret);
+					next(undefined, (passToMatch == user.password));
+					session.close();
+				}
+			}
+		});
+	}
+	
+	id.setLastLogin = function(username, next){
+		var session = server.db.getSession();
+		var statement = server.db.generatePreparedStatement({
+			action:		"update",
+			table:		"users",
+			values:		{lastLogin: "#{lastLogin}"},
+			query:		{username: "#{username}"}
+		})
+		.withParam("lastLogin", Date.now())
+		.withParam("username", username);
+		
+		session.execute(statement, function(err){
+			next(err);
+			session.close();
+		});
+	}
+	
 	function updateUserPassword(username, password, next){
 		var session = server.db.getSession();
 		var findStatement = server.db.generatePreparedStatement({
@@ -438,11 +490,13 @@ var InternalDirectory = (function(){
 		session.execute(findStatement, function(err, findResponse){
 			if(err){
 				next(err);
+				session.close();
 			}
 			else {
 				if(findResponse.getItems().length == 0){
 					var exc = new InternalDirectoryException({msg: "No user with username '" + username + "' could be found."});
 					next(exc);
+					session.close();
 				}
 				else {
 					var user = findResponse.iterator().next();
@@ -457,6 +511,7 @@ var InternalDirectory = (function(){
 					
 					session.execute(updateStatement, function(updateErr){
 						next(updateErr);
+						session.close();
 					});
 				}
 			}
@@ -502,7 +557,7 @@ module.exports.properties = {
 	properties:		[
 		{
 			name:			"Name",
-			key:			"name",
+			key:			"key",
 			defaultValue:	"Internal",
 			locked:			true
 		}

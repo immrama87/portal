@@ -1,4 +1,33 @@
 <h2>Server Configuration</h2>
+
+<section class="col-xs-6">
+	<div class="panel">
+		<strong>User Portals Server</strong>
+		<form class="config" id="user-server">
+			<div class="input-group">
+				<div class="input-label required">Transport Method</div>
+				<select class="input-field" id="user-transport">
+					<option></option>
+					<option value="http">HTTP</option>
+					<option value="https">HTTPS</option>
+				</select>
+			</div>
+			<div class="input-group hide" id="user-https-key-group">
+				<div class="input-label">Key File</div>
+				<input type="file" class="input-field" id="user-https-key"/>
+			</div>
+			<div class="input-group hide" id="user-https-cert-group">
+				<div class="input-label">Cert File</div>
+				<input type="file" class="input-field" id="user-https-cert"/>
+			</div>
+			<div class="input-group">
+				<div class="input-label required">Port</div>
+				<input type="number" class="input-field" min="1" max="65535" id="user-port"/>
+			</div>
+		</form>
+	</div>
+</section>
+
 <section class="col-xs-6">
 	<div class="panel">
 		<strong>Administration Consoles Server</strong>
@@ -23,37 +52,9 @@
 				<div class="input-label required">Port</div>
 				<input type="number" class="input-field" min="1" max="65535" id="admin-port"/>
 			</div>
-		</form>
-	</div>
-</section>
-
-<section class="col-xs-6">
-	<div class="panel">
-		<strong>User Portals Server</strong>
-		<form class="config" id="users-server">
 			<div class="input-group">
-				<div class="input-label required">Transport Method</div>
-				<select class="input-field" id="users-transport">
-					<option></option>
-					<option value="http">HTTP</option>
-					<option value="https">HTTPS</option>
-				</select>
-			</div>
-			<div class="input-group hide" id="users-https-key-group">
-				<div class="input-label">Key File</div>
-				<input type="file" class="input-field" id="users-https-key"/>
-			</div>
-			<div class="input-group hide" id="users-https-cert-group">
-				<div class="input-label">Cert File</div>
-				<input type="file" class="input-field" id="users-https-cert"/>
-			</div>
-			<div class="input-group">
-				<div class="input-label required">Port</div>
-				<input type="number" class="input-field" min="1" max="65535" id="users-port"/>
-			</div>
-			<div class="input-group">
-				<div class="input-label">Same settings as Admin Consoles?</div>
-				<input type="checkbox" id="users-same-as-admin"/>
+				<div class="input-label">Same settings as User Portals?</div>
+				<input type="checkbox" id="admin-same-as-user"/>
 			</div>
 		</form>
 	</div>

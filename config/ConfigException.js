@@ -1,6 +1,6 @@
 var util = require("util");
 
-var ConfigException = (function(settings, implementationContext){	
+var ConfigException = (function(settings, implementationContext){
 	settings = (settings || {});
 	this.name = "ConfigException";
 	

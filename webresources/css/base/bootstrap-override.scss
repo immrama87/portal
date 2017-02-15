@@ -1,0 +1,22 @@
+@import 'colors';
+
+*[class*="-primary"]{
+	background-color:$pastel-blue-darkest;
+	border-color:$pastel-blue-dark;
+}
+
+*.btn-link{
+	color:$pastel-blue-lightest;
+	
+	&:hover{
+		color:$pastel-blue-light;
+	}
+}
+
+a{
+	color:$pastel-blue-lightest;
+	
+	&:hover, &:active{
+		color:$pastel-blue-light;
+	}
+}

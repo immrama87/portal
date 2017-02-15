@@ -1,8 +1,96 @@
 var dataTable;
 var directories = {};
 var requests = 0;
+var form;
 
 $(function(){
+	$("div.additive-list").each(function(index, el){
+		Blueprint.utils.AdditiveList(el.id);
+	});
+	form = Blueprint.utils.FormBuilder.build("user-config-form");
+	form.readFieldsFromHTML();
+	form.trackListField($("#groups-list")[0]);
+	form.trackListField($("#roles-list")[0]);
+	form.onsubmit(function(data, lists){
+		var requests = 0;
+		var errors = false;
+		if(data != undefined){
+			if(data.password){
+				if(data.password != data["pass-confirm"]){
+					Blueprint.utils.Messaging.alert("The passwords provided do not match.", true);
+					return;
+				}
+				else {
+					delete data["pass-confirm"];
+				}
+			}
+		
+			$.ajax({
+				method:			"post",
+				url:			"/rest/v1/config/directories/" + data.directory + "/users/" + data.username,
+				data:			JSON.stringify(data),
+				contentType:	"application/json"
+			})
+			.done(updateLists)
+			.fail(function(xhr, status, err){
+				Blueprint.utils.Messaging.alert("An error occurred updating the user.", true, err);
+				errors = true;
+			});
+		}
+		else {
+			updateLists();
+		}
+		
+		function updateLists(){
+			var username = $("#username").val();
+			requests+=lists["groups-list"].added.length + lists["groups-list"].removed.length;
+			requests+=lists["roles-list"].added.length + lists["roles-list"].removed.length;
+			if(requests > 0){
+				for(var i=0;i<lists["groups-list"].added.length;i++){
+					modifyGroupMembership("post", lists["groups-list"].added[i], username, function(failed){
+						errors = errors || failed;
+						requests--;
+						checkComplete();
+					});
+				}
+				
+				for(var j=0;j<lists["groups-list"].removed.length;j++){
+					modifyGroupMembership("delete", lists["groups-list"].removed[j], username, function(failed){
+						errors = errors || failed;
+						requests--;
+						checkComplete();
+					});
+				}
+				
+				for(var k=0;k<lists["roles-list"].added.length;k++){
+					modifyRoleMembership("post", lists["roles-list"].added[k], username, function(failed){
+						errors = errors || failed;
+						requests--;
+						checkComplete();
+					});
+				}
+				
+				for(var l=0;l<lists["roles-list"].removed.length;l++){
+					modifyRoleMembership("delete", lists["roles-list"].removed[l], username, function(failed){
+						errors = errors || failed;
+						requests--;
+						checkComplete();
+					});
+				}
+			}
+			else {
+				checkComplete();
+			}
+		}
+		
+		function checkComplete(){
+			if(requests == 0){
+				Blueprint.utils.Messaging.alert("User created/modified " + (errors ? "with errors." : "successfully"));
+				form.clearChangedState();
+				form.clear(rebuildTable);
+			}
+		}
+	});
 	$("#add-user").on("click touch", function(evt){
 		showUserForm();
 	});
@@ -13,7 +101,7 @@ $(function(){
 		dataType:	"json"
 	})
 	.done(function(response){
-		var dirSelect = document.getElementById("user-directory");
+		var dirSelect = document.getElementById("directory");
 		$(dirSelect).html(document.createElement("option"));
 		for(var key in response){
 			var option = document.createElement("option");
@@ -28,7 +116,17 @@ $(function(){
 		retrieveUsers();
 	})
 	.fail(function(xhr, status, err){
-		alert("Error retrieving user directories list. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error retrieving user directories list.", true, err);
+	});
+	
+	$("#user-details-submit").off("click touch");
+	$("#user-details-submit").on("click touch", function(evt){
+		form.submit();
+	});
+	
+	$("#user-details-cancel").off("click touch");
+	$("#user-details-cancel").on("click touch", function(evt){
+		form.clear(clearUserForm);
 	});
 });
 
@@ -46,7 +144,7 @@ function retrieveUsers(){
 		retrieveGroups();
 	})
 	.fail(function(xhr, status, err){
-		alert("Error retrieving users list. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error retrieving users list.", true, err);
 	});
 }
 
@@ -63,15 +161,11 @@ function retrieveGroups(){
 		buildListObjects();
 	})
 	.fail(function(xhr, status, err){
-		alert("Error retrieving groups list. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error retrieving groups list.", true, err);
 	});
 }
 
 function buildListObjects(){
-	$("div.additive-list").each(function(index, el){
-		APP.utils.AdditiveList(el.id);
-	});
-	
 	var groups = [];
 	for(var dir in directories){
 		for(var i=0;i<directories[dir].groups.length;i++){
@@ -101,7 +195,7 @@ function buildListObjects(){
 		buildTable();
 	})
 	.fail(function(xhr, status, err){
-		alert("Error retrieving roles list. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error retrieving roles list.", true, err);
 	});
 }
 
@@ -138,27 +232,28 @@ function buildTable(){
 				title:			"",
 				className:		"delete",
 				data:			null,
-				defaultContent: "<span class='delete fa fa-times'/>",
+				defaultContent: "<span class='delete fa fa-times'></span>",
 				searchable:		false,
 				orderable:		false,
 				width:			"5%",
 				createdCell:	function(cell, cellData, rowData, rowIndex, cellIndex){
 					$(cell).find("span.delete").on("click touch", function(evt){
 						evt.stopPropagation();
-						var conf = confirm("Deleting a user cannot be undone. Proceed?");
-						if(conf){
-							$.ajax({
-								method:			"delete",
-								url:			"/rest/v1/config/directories/" + rowData.directory + "/users/" + rowData.username
-							})
-							.done(function(response){
-								alert("User successfully removed.");
-								rebuildTable();
-							})
-							.fail(function(xhr, status, err){
-								alert("Error removing user. Please consult the system logs for more information.\nError message: " + err);
-							});
-						}
+						Blueprint.utils.Messaging.confirm("Deleting a user cannot be undone. Proceed?", function(conf){
+							if(conf){
+								$.ajax({
+									method:			"delete",
+									url:			"/rest/v1/config/directories/" + rowData.directory + "/users/" + rowData.username
+								})
+								.done(function(response){
+									Blueprint.utils.Messaging.alert("User successfully removed.");
+									rebuildTable();
+								})
+								.fail(function(xhr, status, err){
+									Blueprint.utils.Messaging.alert("Error removing user.", true, err);
+								});
+							}
+						});
 					});
 				}
 			}
@@ -169,7 +264,7 @@ function buildTable(){
 		pagingType:		"first_last_numbers",
 		rowCallback:	function(row, data, index){
 			$(row).on("click touch", function(evt){
-				cancelForm(function(){
+				form.clear(function(){
 					$("#users").find("tr.selected").removeClass("selected");
 					$(row).addClass("selected");
 					showUserForm(data);
@@ -177,6 +272,7 @@ function buildTable(){
 			});
 		}
 	});
+	Blueprint.modules.activeModule().ready();
 }
 
 function showUserForm(userDetails){
@@ -186,8 +282,8 @@ function showUserForm(userDetails){
 	var userConfigForm = document.getElementById("user-config");
 	userConfigForm.userDetails = userDetails;
 	$(userConfigForm).removeClass("hide");
-	$("#user-directory").removeAttr("disabled");
-	$("#user-username").removeAttr("disabled");
+	$("#directory").removeAttr("disabled");
+	$("#username").removeAttr("disabled");
 	$("#change-password").removeClass("hide");
 	$("#pass-form").addClass("hide");
 	userConfigForm.groups = [];
@@ -199,34 +295,35 @@ function showUserForm(userDetails){
 			url:		"/rest/v1/config/directories/" + userDetails.directory + "/users/" + userDetails.username,
 			dataType:	"json"
 		}).done(function(response){
-			$("#user-directory").val(userDetails.directory).attr("disabled", true);
-			$("#user-username").attr("disabled", true);
+			$("#directory").val(userDetails.directory).attr("disabled", true);
+			$("#username").attr("disabled", true);
 			for(var key in response){
 				userConfigForm.userDetails[key] = response[key];
-				$("#user-" + key).val(response[key]);
+				form.setFieldValue(key, response[key]);
 			}
 			
 			$.ajax({
 				method:		"get",
-				url:		"/rest/v1/config/directories/" + userDetails.directory + "/users/" + userDetails.username + "/groups",
+				url:		"/rest/v1/config/users/" + userDetails.username + "/groups",
 				dataType:	"json"
 			}).done(function(groupsResponse){
+				$("#groups-list")[0].clearOriginalOptions();
 				for(var dir in groupsResponse){
 					for(var i=0;i<groupsResponse[dir].length;i++){
 						$("#groups-list")[0].addOption(groupsResponse[dir][i].name);
-						userConfigForm.groups.push(groupsResponse[dir][i].name);
+						$("#groups-list")[0].addOriginalOption(groupsResponse[dir][i].name);
 					}
 				}
 			});
 			
 			$.ajax({
 				method:		"get",
-				url:		"/rest/v1/auth/users/" + userDetails.username + "/roles",
+				url:		"/rest/v1/config/users/" + userDetails.username + "/roles",
 				dataType:	"json"
 			}).done(function(rolesResponse){
 				for(var i=0;i<rolesResponse.length;i++){
 					$("#roles-list")[0].addOption(rolesResponse[i].roleId);
-					userConfigForm.roles.push(rolesResponse[i].roleId);
+					$("#roles-list")[0].addOriginalOption(rolesResponse[i].roleId);
 				}
 			});
 		});
@@ -242,144 +339,6 @@ function showUserForm(userDetails){
 		$("#change-password").addClass("hide");
 		$("#pass-form").removeClass("hide");
 	}
-	
-	$("#user-details-submit").off("click touch");
-	$("#user-details-submit").on("click touch", function(evt){
-		evt.preventDefault();
-		submitData();
-	});
-	
-	$("#user-details-cancel").off("click touch");
-	$("#user-details-cancel").on("click touch", function(evt){
-		evt.preventDefault();
-		cancelForm();
-	});
-}
-
-function submitData(){
-	var userConfigForm = document.getElementById("user-config");
-	var userDetails = userConfigForm.userDetails;
-	var groups = userConfigForm.groups || [];
-	var roles = userConfigForm.roles || [];
-	var data = {};
-	var directory = $("#user-directory").val();
-	var username = $("#user-username").val();
-	var update = true;
-	var errors = false;
-	var changed = false;
-	
-	if(userDetails == undefined){
-		update = false;
-		var missing = [];
-		$("div.input-label.required").each(function(index, el){
-			if($(el).parent().find(".input-field").val() == ""){
-				missing.push($(el).text());
-			}
-		});
-		
-		if(missing.length > 0){
-			alert("Could not complete the request. The following required fields do not have a value:\n\t" + missing.join("\n\t"));
-			return;
-		}
-	}
-	
-	userDetails = userDetails || {};
-	userDetails.fn = userDetails.fn || null;
-	userDetails.ln = userDetails.ln || null;
-	userDetails.email = userDetails.email || null;
-	
-	if($("#user-fn").val() != userDetails.fn){
-		data.fn = $("#user-fn").val();
-	}
-	if($("#user-ln").val() != userDetails.ln){
-		data.ln = $("#user-ln").val();
-	}
-	if($("#user-email").val() != userDetails.email){
-		data.email = $("#user-email").val();
-	}
-	
-	var password = $("#user-password").val();
-	var confirmPass = $("#user-pass-confirm").val();
-	
-	if(password != ""){
-		if(password != confirmPass){
-			alert("The provided passwords do not match.");
-			return;
-		}
-		else {
-			data.password = password;
-		}
-	}
-	
-	var requests = 0;
-	if(Object.keys(data).length > 0){
-		requests++;
-		changed = true;
-		$.ajax({
-			method:			"post",
-			url:			"/rest/v1/config/directories/" + directory + "/users/" + username,
-			data:			JSON.stringify(data),
-			contentType:	"application/json"
-		})
-		.fail(function(xhr, status, err){
-			alert("An error occurred updating the user. Please check the system logs for more information.\nError message: " + err);
-			errors = true;
-		})
-		.always(function(){
-			requests--;
-			checkComplete();
-		});
-	}
-	
-	var groupDifferences = $("#groups-list")[0].getDifferences(groups);
-	changed = changed || (groupDifferences.added.length + groupDifferences.removed.length) > 0;
-	requests += (groupDifferences.added.length + groupDifferences.removed.length);
-	for(var i=0;i<groupDifferences.added.length;i++){
-		modifyGroupMembership("post", groupDifferences.added[i], username, function(err){
-			errors = errors || err;
-			requests--;
-			checkComplete();
-		});
-	}
-	
-	for(var j=0;j<groupDifferences.removed.length;j++){
-		modifyGroupMembership("delete", groupDifferences.removed[j], username, function(err){
-			errors = errors || err;
-			requests--;
-			checkComplete();
-		});
-	}
-	
-	var rolesDifferences = $("#roles-list")[0].getDifferences(roles);
-	changed = changed || (rolesDifferences.added.length + rolesDifferences.removed.length) > 0;
-	requests += (rolesDifferences.added.length + rolesDifferences.removed.length);
-	for(var k=0;k<rolesDifferences.added.length;k++){
-		modifyRoleMembership("post", rolesDifferences.added[k], username, function(err){
-			errors = errors || err;
-			requests--;
-			checkComplete();
-		});
-	}
-	
-	for(var l=0;l<rolesDifferences.removed.length;l++){
-		modifyRoleMembership("delete", rolesDifferences.removed[l], username, function(err){
-			errors = errors || err;
-			requests--;
-			checkComplete();
-		});
-	}
-	
-	checkComplete();
-	
-	function checkComplete(){
-		if(requests == 0 && changed){
-			alert("User " + (update ? "updated" : "created") + " " + (errors ? "with errors." : "successfully"));
-			clearUserForm(rebuildTable);
-		}
-		else if(!changed){
-			alert("No changes have been made yet.");
-		}
-	}
 }
 
 function modifyGroupMembership(method, group, username, next){
@@ -391,7 +350,7 @@ function modifyGroupMembership(method, group, username, next){
 		contentType:	"application/json"
 	})
 	.fail(function(xhr, status, err){
-		alert("Error " + ((method == "post") ? "adding the user to " : "removing the user from ") + "group '" + group.displayName + "'. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error " + ((method == "post") ? "adding the user to " : "removing the user from ") + "group '" + group.displayName + "'.", true, err);
 		error = true;
 	})
 	.always(function(){
@@ -408,58 +367,12 @@ function modifyRoleMembership(method, role, username, next){
 		contentType:	"application/json"
 	})
 	.fail(function(xhr, status, err){
-		alert("Error " + ((method == "post") ? "adding the user to " : "removing the user from ") + "role '" + role.name + "'. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error " + ((method == "post") ? "adding the user to " : "removing the user from ") + "role '" + role.name + "'.", true, err);
 		error = true;
 	})
 	.always(function(){
 		next(error);
 	});
-}
-
-function cancelForm(next){
-	var userConfigForm = document.getElementById("user-config");
-	var userDetails = userConfigForm.userDetails;
-	var groups = userConfigForm.groups || [];
-	var roles = userConfigForm.roles || [];
-	var changed = false;
-	var cancel = true;
-	
-	if(userDetails == undefined){
-		if($("#user-directory").val() != "" ||
-			$("#user-username").val() != ""){
-			changed = true;
-		}
-	}
-	
-	userDetails = userDetails || {};
-	userDetails.fn = userDetails.fn || "";
-	userDetails.ln = userDetails.ln || "";
-	userDetails.email = userDetails.email || "";
-	
-	if($("#user-fn").val() != userDetails.fn ||
-		$("#user-ln").val() != userDetails.ln ||
-		$("#user-email").val() != userDetails.email){
-		changed = true;
-	}
-	
-	if($("#user-password").val() != ""){
-		changed = true;
-	}
-	
-	
-	var groupsDifferences = $("#groups-list")[0].getDifferences(groups);
-	changed = changed || (groupsDifferences.added.length + groupsDifferences.removed.length) > 0;
-	
-	var rolesDifferences = $("#roles-list")[0].getDifferences(roles);
-	changed = changed || (rolesDifferences.added.length + rolesDifferences.removed.length) > 0;
-	
-	if(changed){
-		cancel = confirm("You have made changes that will be lost if you cancel. Proceed?");
-	}
-	
-	if(cancel){
-		clearUserForm(next);
-	}
 }
 
 function clearUserForm(next){
@@ -480,7 +393,7 @@ function clearUserForm(next){
 function getGroupRoles(group, remove){
 	$.ajax({
 		method:		"get",
-		url:		"/rest/v1/auth/groups/" + group.name + "/roles",
+		url:		"/rest/v1/config/groups/" + group.name + "/roles",
 		dataType:	"json"
 	}).done(function(rolesResponse){
 		for(var j=0;j<rolesResponse.length;j++){
@@ -530,6 +443,51 @@ function rebuildTable(){
 		clearUserForm();
 	})
 	.fail(function(xhr, status, err){
-		alert("Error retrieving user information. Please consult the system logs for more info.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error retrieving user information.", true, err);
+	});
+}
+
+Blueprint.modules.activeModule().setData = function(data){
+	if(data.length == 1){
+		$.ajax({
+			method:		"get",
+			url:		"/rest/v1/config/users/" + data[0],
+			dataType:	"json"
+		})
+		.done(function(response){
+			showUserForm(response);
+		});
+	}
+	else {
+		$.ajax({
+			method:		"get",
+			url:		"/rest/v1/config/directories/" + data[0] + "/users/" + data[1],
+			dataType:	"json"
+		})
+		.done(function(response){
+			response.directory = data[0];
+			showUserForm(response);
+		});
+	}
+}
+
+Blueprint.modules.activeModule().destroy = function(next){
+	form.clear(function(){
+		delete dataTable;
+		delete directories;
+		delete requests;
+		delete form;
+		delete retrieveUsers;
+		delete retrieveGroups;
+		delete buildListObjects;
+		delete buildTable;
+		delete showUserForm;
+		delete modifyGroupMembership;
+		delete modifyRoleMembership;
+		delete clearUserForm;
+		delete getGroupRoles;
+		delete rebuildTable;
+		
+		next();
 	});
 }

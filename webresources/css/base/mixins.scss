@@ -1,0 +1,60 @@
+@mixin box-shadow($x, $y, $radius, $color, $inset: false){
+	@if($inset == false){
+		-webkit-box-shadow: $x $y $radius $color;
+		   -moz-box-shadow: $x $y $radius $color;
+				box-shadow: $x $y $radius $color;
+	}
+	@else {
+		-webkit-box-shadow: inset $x $y $radius $color;
+		   -moz-box-shadow: inset $x $y $radius $color;
+		        box-shadow: inset $x $y $radius $color;
+	}
+}
+
+@mixin border-radius($radius, $topLeft: true, $topRight: true, $bottomLeft: true, $bottomRight: true){
+	@if($topLeft){
+		border-top-left-radius: $radius;
+	}
+	@if($topRight){
+		border-top-right-radius: $radius;
+	}
+	@if($bottomLeft){
+		border-bottom-left-radius: $radius;
+	}
+	@if($bottomRight){
+		border-bottom-right-radius: $radius;
+	}
+}
+
+@mixin bootstrap-col-width($cols){
+	width: ((100% / 12) * $cols);
+}
+
+@mixin vertical-align-table($height){
+	display:table-cell;
+	height:$height;
+	vertical-align:middle;
+}
+
+@mixin generate-caret($width, $color, $left: false, $right: false, $up: false, $down: false){
+	width:0;
+	height:0;
+	position:absolute;
+	border-left:$width solid transparent;
+	border-right:$width solid transparent;
+	border-top:$width solid transparent;
+	border-bottom:$width solid transparent;
+	
+	@if($left){
+		border-right: $width solid $color;
+	}
+	@if($right){
+		border-left: $width solid $color;
+	}
+	@if($up){
+		border-bottom: $width solid $color;
+	}
+	@if($down){
+		border-top: $width solid $color;
+	}
+}

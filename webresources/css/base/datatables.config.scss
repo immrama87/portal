@@ -1,0 +1,102 @@
+@import 'colors';
+@import 'mixins';
+
+div.dataTables_wrapper{
+	margin-bottom:1em;
+	
+	div.dataTables_filter{
+		float:none;
+		text-align:left;
+		
+		label{
+			color:$lightest-grey;
+			input{
+				font-size:1em;
+				padding:0.25em;
+				border-radius:0.5em;
+				outline:none;
+				border:1px solid $lightest-grey;
+				@include box-shadow(0.25em, 0.25em, 0.15em, rgba(0,0,0,0.1), $inset: true);
+			}
+		}
+	}
+	
+	div.dataTables_paginate{
+		float:none;
+		text-align:center;
+	}
+	
+	table.dataTable{
+		thead{
+			background:$pastel-blue-dark;
+			color:$lightest-grey;
+		}
+		
+		tbody{
+			tr{
+				color:$darkest-grey;
+				cursor:pointer;
+				
+				&.odd{
+					background:$light-grey;
+				}
+				
+				&.even{
+					background:$lightest-grey;
+				}
+				
+				&:hover, &.odd:hover{
+					background:$dark-grey;
+					color:$lightest-grey;
+				}
+				
+				&.selected, &.selected:hover{
+					background:$pastel-blue;
+					color:$lightest-grey;
+				}
+				
+				td{
+					i{
+						&.sort-up, &.sort-down{
+							cursor:pointer;
+							
+							&:hover{
+								color:$pastel-blue;
+							}
+						}
+					}
+				
+					&.delete{
+						text-align:center;
+					
+						span.delete{
+							cursor:pointer;
+							&:hover{
+								color:$btstrp-red;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		&.unstyled{
+			border-bottom:none;
+			thead{
+				display:none;
+			}
+			
+			tbody{
+				tr{
+					color:inherit;
+					background:inherit;
+					cursor:default;
+					
+					&:hover{
+						background:inherit;
+					}
+				}
+			}
+		}
+	}
+}

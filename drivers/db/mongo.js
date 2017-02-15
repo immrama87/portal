@@ -42,11 +42,144 @@ module.exports = (function(){
 		return new MongoDbPreparedStatement(queryObj);
 	}
 	
+	d.hasDatabase = function(next){
+		if(settings == undefined){
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
+			});
+		}
+		else if(settings.hasOwnProperty("server") && settings.hasOwnProperty("port") && settings.hasOwnProperty("db")){
+			var url = "mongodb://" + settings.server + ":" + settings.port + "/" + settings.db;
+			MongoClient.connect(url, function(err, db){
+				if(err){
+					errorLog.fatal(err, function(){
+						throw err;
+					});
+				}
+				
+				if(settings.hasOwnProperty("user") && settings.hasOwnProperty("pass")){
+					db.authenticate(settings.user, settings.pass, function(authErr, result){
+						if(authErr){
+							errorLog.fatal(authErr, function(){
+								throw authErr;
+							});
+						}
+						
+						checkForDB(db, settings.db, next);
+					});
+				}
+				else {
+					checkForDB(db, settings.db, next);
+				}
+			});
+		}
+		else {
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
+			});
+		}
+	}
+	
+	d.createDatabase = function(next){
+		next(undefined);
+	}
+	
+	d.hasTable = function(table, next){
+		if(settings == undefined){
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
+			});
+		}
+		else if(settings.hasOwnProperty("server") && settings.hasOwnProperty("port") && settings.hasOwnProperty("db")){
+			var url = "mongodb://" + settings.server + ":" + settings.port + "/" + settings.db;
+			MongoClient.connect(url, function(err, db){
+				if(err){
+					errorLog.fatal(err, function(){
+						throw err;
+					});
+				}
+				
+				if(settings.hasOwnProperty("user") && settings.hasOwnProperty("pass")){
+					db.authenticate(settings.user, settings.pass, function(authErr, result){
+						if(authErr){
+							errorLog.fatal(authErr, function(){
+								throw authErr;
+							});
+						}
+						
+						checkForCollection(db, table, next);
+					});
+				}
+				else {
+					checkForCollection(db, table, next);
+				}
+			});
+		}
+		else {
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
+			});
+		}
+	}
+	
+	d.validateTableField = function(table, columnDef, next){
+		next(undefined, true, true);
+	}
+	
+	d.createTable = function(table, columnDefs, next){
+		if(settings == undefined){
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
+			});
+		}
+		else if(settings.hasOwnProperty("server") && settings.hasOwnProperty("port") && settings.hasOwnProperty("db")){
+			var url = "mongodb://" + settings.server + ":" + settings.port + "/" + settings.db;
+			MongoClient.connect(url, function(err, db){
+				if(err){
+					errorLog.fatal(err, function(){
+						throw err;
+					});
+				}
+				
+				if(settings.hasOwnProperty("user") && settings.hasOwnProperty("pass")){
+					db.authenticate(settings.user, settings.pass, function(authErr, result){
+						if(authErr){
+							errorLog.fatal(authErr, function(){
+								throw authErr;
+							});
+						}
+						createCollection(db, table, next);
+					});
+				}
+				else {
+					createCollection(db, table, next);
+				}
+			});
+		}
+		else {
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
+			});
+		}
+	}
+	
 	var MongoDbSession = (function(){
 		var mdbs = {};
 		var session;
 		
-		if(settings.hasOwnProperty("server") && settings.hasOwnProperty("port") && settings.hasOwnProperty("db")){
+		if(settings == undefined){
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
+			});
+		}
+		else if(settings.hasOwnProperty("server") && settings.hasOwnProperty("port") && settings.hasOwnProperty("db")){
 			var url = "mongodb://" + settings.server + ":" + settings.port + "/" + settings.db;
 			MongoClient.connect(url, function(err, db){
 				if(err){
@@ -69,6 +202,12 @@ module.exports = (function(){
 				else {
 					session = db;
 				}
+			});
+		}
+		else {
+			var err = new MongoDbExecutionException({msg: "MongoDB driver could not generate a new session. The driver has not yet been initialized."});
+			errorLog.fatal(err, function(){
+				throw err;
 			});
 		}
 		
@@ -147,44 +286,58 @@ module.exports = (function(){
 		
 		function searchForParams(item){
 			var index=0;
-			while(item.indexOf("#{", index) > -1){
-				var start = item.indexOf("#{", index);
-				var end = item.indexOf("}", start);
-				
-				var param = item.substring(start+2, end);
-				params[param] = undefined;
-				index = end+1;
+			if(typeof item != "object"){
+				while(item.indexOf("#{", index) > -1){
+					var start = item.indexOf("#{", index);
+					var end = item.indexOf("}", start);
+					
+					var param = item.substring(start+2, end);
+					params[param] = undefined;
+					index = end+1;
+				}
+			}
+			else {
+				for(var key in item){
+					searchForParams(item[key]);
+				}
 			}
 		}
 		
 		function replaceParams(item){
-			while(item.indexOf("#{") > -1){
-				var start = item.indexOf("#{");
-				var end = item.indexOf("}", start);
-				
-				var param = item.substring(start+2, end);
-				if(params[param] != undefined){
-					item = item.substring(0, start) + params[param] + item.substring(end+1);
-				}
-				else {
-					var err = new MongoDbExecutionException({msg: "Could not execute a prepared statement. The parameter '" + param + "' was not initialized."});
-					return err;
-				}
-			}
-			
-			if(item.indexOf("#[") > -1){
-				var start = item.indexOf("#[");
-				var end = item.indexOf("]", start);
-				var data = item.substring(start + 2, end);
-				var items = data.split(",");
-				for(var i=items.length-1;i>=0;i--){
-					items[i] = items[i].trim();
-					if(items[i] == ""){
-						items.splice(i, 1);
+			if(typeof item != "object"){
+				while(item.indexOf("#{") > -1){
+					var start = item.indexOf("#{");
+					var end = item.indexOf("}", start);
+					
+					var param = item.substring(start+2, end);
+					if(params[param] != undefined){
+						item = item.substring(0, start) + params[param] + item.substring(end+1);
+					}
+					else {
+						var err = new MongoDbExecutionException({msg: "Could not execute a prepared statement. The parameter '" + param + "' was not initialized."});
+						return err;
 					}
 				}
 				
-				item = items;
+				if(item.indexOf("#[") > -1){
+					var start = item.indexOf("#[");
+					var end = item.indexOf("]", start);
+					var data = item.substring(start + 2, end);
+					var items = data.split(",");
+					for(var i=items.length-1;i>=0;i--){
+						items[i] = items[i].trim();
+						if(items[i] == ""){
+							items.splice(i, 1);
+						}
+					}
+					
+					item = items;
+				}
+			}
+			else {
+				for(var key in item){
+					item[key] = replaceParams(item[key]);
+				}
 			}
 			
 			return item;
@@ -337,6 +490,8 @@ module.exports = (function(){
 	
 	function insert(db, collection, values, query, next){
 		var coll = db.collection(collection);
+		values.createdAt = new Date().getTime().toString();
+		values.modifiedAt = values.createdAt;
 		coll.insert(values, function(err, result){
 			next(err);
 		});
@@ -344,6 +499,7 @@ module.exports = (function(){
 	
 	function update(db, collection, values, query, next){
 		var coll = db.collection(collection);
+		values.modifiedAt = new Date().getTime().toString();
 		coll.update(query, {$set: values}, function(err, result){
 			next(err);
 		});
@@ -354,6 +510,42 @@ module.exports = (function(){
 		coll.remove(query, function(err, result){
 			next(err);
 		})
+	}
+	
+	function checkForDB(db, database, next){
+		db.admin().listDatabases(function(err, dbs){
+			if(err){
+				console.log(err);
+				next(err);
+			}
+			else {
+				var found = false;
+				for(var i=0;i<dbs.databases.length;i++){
+					if(dbs.databases[i].name == settings.db && !dbs.databases[i].empty){
+						found = true;
+						break;
+					}
+				}
+				next(undefined, found);
+			}
+		});
+	}
+	
+	function checkForCollection(db, collection, next){
+		db.collection("system.namespaces").find({name: settings.db + "." + collection}).toArray(function(err, items){
+			if(err){
+				next(err);
+			}
+			else {
+				next(undefined, (items.length == 1));
+			}
+			db.close();
+		});
+	}
+	
+	function createCollection(db, collection, next){
+		db.createCollection(collection);
+		next();
 	}
 	
 	return d;

@@ -11,7 +11,7 @@ $(function(){
 		}
 	})
 	.fail(function(xhr, status, err){
-		alert("Error retrieving logger configuration. Please check the system logs for more information.\nError message: " + err);
+		Blueprint.utils.Messaging.alert("Error retrieving logger configuration.", true, err);
 	});
 });
 
@@ -36,7 +36,7 @@ function generateLoggerItem(loggerName){
 			showLoggerDetails(response, loggerName);
 		})
 		.fail(function(xhr, status, err){
-			alert("Error retrieving configuration for logger '" + loggerName + "'. Please check the system logs for more information.\nError message: " + err);
+			Blueprint.utils.Messaging.alert("Error retrieving configuration for logger '" + loggerName + "'.", true, err);
 		});
 	});
 	
@@ -95,7 +95,7 @@ function showLoggerDetails(loggerConfig, loggerName){
 			contentType:	"application/json"
 		})
 		.fail(function(xhr, status, err){
-			alert("Error updating logger '" + loggerName + "'. Please check the system logs for more information.\nError message: " + err);
+			Blueprint.utils.Messaging.alert("Error updating logger '" + loggerName + "'.", true, err);
 		});
 	});
 }
@@ -121,7 +121,7 @@ function generateAppenderItem(appenderName){
 			showAppenderDetails(response, appenderName);
 		})
 		.fail(function(xhr, status, err){
-			alert("Error retrieving configuration for appender '" + appenderName + "'. Please check the system logs for more information.\nError message: " + err);
+			Blueprint.utils.Messaging.alert("Error retrieving configuration for appender '" + appenderName + "'.", true, err);
 		});
 	});
 	
@@ -150,7 +150,7 @@ function showAppenderDetails(appenderConfig, appenderName){
 				showLogData(response, appenderName);
 			})
 			.fail(function(xhr, status, err){
-				alert("Error retrieving log file data for appender '" + appenderName + "'. Please check the system logs for more information.\nError message: " + err);
+				Blueprint.utils.Messaging.alert("Error retrieving log file data for appender '" + appenderName + "'.", true, err);
 			});
 		});
 		
@@ -216,7 +216,7 @@ function generateAppenderDetail(key, value, appenderConfig, appenderName){
 				contentType:	"application/json"
 			})
 			.fail(function(xhr, status, err){
-				alert("Error updating appender '" + appenderName + "'. Please check the system logs for more information.\nError message: " + err);
+				Blueprint.utils.Messaging.alert("Error updating appender '" + appenderName + "'.", true, err);
 			});
 		});
 	}
@@ -304,7 +304,7 @@ function showLogData(logData, appenderName){
 			showLogData(response, appenderName);
 		})
 		.fail(function(xhr, status, err){
-			alert("Error retrieving log file data for appender '" + appenderName + "'. Please check the system logs for more information.\nError message: " + err);
+			Blueprint.utils.Messaging.alert("Error retrieving log file data for appender '" + appenderName + "'.", true, err);
 		});
 	});
 	
@@ -333,7 +333,7 @@ function showLogData(logData, appenderName){
 			showLogData(response, appenderName);
 		})
 		.fail(function(xhr, status, err){
-			alert("Error retrieving log file data for appender '" + appenderName + "'. Please check the system logs for more information.\nError message: " + err);
+			Blueprint.utils.Messaging.alert("Error retrieving log file data for appender '" + appenderName + "'.", true, err);
 		});
 	});
 	
@@ -349,7 +349,7 @@ function showLogData(logData, appenderName){
 			showLogData(response, appenderName);
 		})
 		.fail(function(xhr, status, err){
-			alert("Error retrieving log file data for appender '" + appenderName + "'. Please check the system logs for more information.\nError message: " + err);
+			Blueprint.utils.Messaging.alert("Error retrieving log file data for appender '" + appenderName + "'.", true, err);
 		});
 	});
 }

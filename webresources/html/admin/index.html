@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Column Blueprint Administration</title>
+		#{includeDependencies()}
+		<link rel="stylesheet" type="text/css" href="/base/main.scss"/>
+		<link rel="stylesheet" type="text/css" href="/base/datatables.config.scss"/>
+		
+		<script src="/main/app.js"></script>
+		<script src="/admin/main.js"></script>
+	</head>
+	<body>
+		<section class="header">
+			<div class="col-xs-1 logo">
+				<img src="/column-technologies.png" alt="Column Technologies"/>
+			</div>
+			<div class="col-xs-9">
+				<h1>Column Blueprint Administration</h1>
+			</div>
+			<div class="col-xs-2">
+				<span class="user-info" id="logged-in-user-info"><span class="user-full-name">Retrieving user info...</span>&nbsp;&nbsp;<i class="fa fa-chevron-circle-down"></i></span>
+				<div id="user-info-panel" class="hide">
+					<div class="caret"></div>
+					<div class="col-xs-6" id="user-icon">
+						<i class="fa fa-user-circle-o"></i>
+					</div>
+					<div class="col-xs-6">
+						<button class="btn btn-secondary">Profile</button>
+						<button class="btn btn-primary" id="logout">Logout</button>
+					</div>
+				</div>
+			</div>
+		</section>
+		<section class="content">
+			<div id="sidebar" class="sidebar-1 col-xs-1">
+				
+			</div>
+			<div class="frame col-xs-11">
+				<div id="sub-sidebar" class="sidebar-2 col-xs-2 hide">
+					<div id="slide-button fa fa-bars"></div>
+				</div>
+				<div id="frame" class="col-xs-12">
+				
+				</div>
+			</div>
+		</section>
+	</body>
+</html>

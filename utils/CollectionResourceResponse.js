@@ -38,8 +38,15 @@ var CollectionResourceResponse = (function(collection, process, complete, fail){
 		return crr;
 	}
 	
+	crr.end = function(responseData){
+		if(typeof complete == "function"){
+			complete(responseData);
+		}
+	}
+	
 	crr.process = function(){
 		var responses = [];
+		var errors = [];
 		var failed = false;
 		
 		if(typeof complete != "function"){
@@ -57,45 +64,55 @@ var CollectionResourceResponse = (function(collection, process, complete, fail){
 		}
 		else if(Array.isArray(collection)){
 			for(var i=0;i<collection.length;i++){
-				responses.push(new CollectionResourceResponseItem(collection[i], process, i, itemComplete, itemFail));
+				responses.push(new CollectionResourceResponseItem(collection[i], process, i, itemComplete, itemFail, itemForce));
 			}
 		}
 		else {
 			for(var key in collection){
-				responses.push(new CollectionResourceResponseItem(collection[key], process, key, itemComplete, itemFail));
+				responses.push(new CollectionResourceResponseItem(collection[key], process, key, itemComplete, itemFail, itemForce));
 			}
 		}
 		
+		if(responses.length == 0){
+			complete();
+		}
+		
 		function itemComplete(){
-			if(!failed){
-				var completed = true;
-				var resultSet = {};
-			
-				for(var i=0;i<responses.length;i++){
-					if(!responses[i].isComplete()){
-						completed = false;
-						break;
-					}
-					else {
-						resultSet[responses[i].getKey()] = responses[i].getResult();
-					}
-					
-					if(completed){
-						complete(resultSet);
-					}
+			var completed = true;
+			var resultSet = {};
+		
+			for(var i=0;i<responses.length;i++){
+				if(!responses[i].isComplete()){
+					completed = false;
+					break;
 				}
+				else {
+					resultSet[responses[i].getKey()] = responses[i].getResult();
+				}
+			}
+				
+			if(completed && !failed){
+				complete(resultSet);
+			}
+			else if(complete && failed){
+				fail(errors.join("\n"));
 			}
 		}
 		
 		function itemFail(err){
-			fail(err);
+			errors.push(err);
+			failed = true;
+		}
+		
+		function itemForce(data){
+			complete(data);
 		}
 	}
 	
 	return crr;
 });
 
-var CollectionResourceResponseItem = (function(item, process, key, complete, fail){
+var CollectionResourceResponseItem = (function(item, process, key, complete, fail, forceEnd){
 	var crri = {};
 	var completed = false;
 	var result;
@@ -103,13 +120,15 @@ var CollectionResourceResponseItem = (function(item, process, key, complete, fai
 	
 	process(item, function(err, response){
 		if(err){
-			fail(err);
+			fail(err);	
 		}
 		else {
 			result = response;
 			completed = true;
 			complete();
 		}
+	}, function(forceData){
+		forceEnd(forceData);
 	});
 	
 	crri.isComplete = function(){

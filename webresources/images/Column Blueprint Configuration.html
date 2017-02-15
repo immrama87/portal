@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!-- saved from url=(0029)http://localhost/config/users -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style type="text/css">@charset "UTF-8";[ng\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>
+		<title>Column Blueprint Configuration</title>
+		<!--Begin Stylesheet Dependencies-->
+	<link rel="stylesheet" type="text/css" href="./Column Blueprint Configuration_files/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="./Column Blueprint Configuration_files/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="./Column Blueprint Configuration_files/jquery.dataTables.min.css" integrity="sha384-YcTv91pbdpZ4It88TK5bVHIGTuPqoSi0CpPF9UA9eRicGHEJ3lpQZajpytN4rLkp" crossorigin="anonymous">
+	<!--End Stylesheet Dependencies-->
+
+	<!--Begin Javascript Dependencies-->
+<script src="./Column Blueprint Configuration_files/jquery-3.1.1.min.js.download" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7" crossorigin="anonymous"></script>
+<script src="./Column Blueprint Configuration_files/jquery.dataTables.min.js.download" integrity="sha384-BpOQ55RA3arDUEP5boNauNeeKbuCH9IAzxHZTwHM+BKw2N09+Wep2yWWyvnE5eZl" crossorigin="anonymous"></script>
+<script src="./Column Blueprint Configuration_files/angular.min.js.download" integrity="sha384-0nHK4IeX5WIG78+/bQh3VuaxSbnwfPdnkdkgNeh2WVq7tbWmAAxOro56T9A75d8F" crossorigin="anonymous"></script>
+<script src="./Column Blueprint Configuration_files/require.min.js.download" integrity="sha384-/6fSBW6alCm8WL259qD1kQ6bEBlBQJUEehscPXkJ4vQibYGLIMB6R4MNnKg//Sxj" crossorigin="anonymous"></script>
+	<!--End Javascript Dependencies-->
+	<script type="application/javascript" src="./Column Blueprint Configuration_files/app.js.download"></script>
+	<script type="application/javascript">Blueprint.verifyResource("css", "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css", "/dependencies/bootstrap.css");Blueprint.verifyResource("css", "https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css", "/dependencies/fontawesome.css");Blueprint.verifyResource("css", "https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css", "/dependencies/datatables_css.css");Blueprint.verifyResource("js", window.jQuery, "/dependencies/jquery.js");Blueprint.verifyResource("js", window.jQuery.prototype.DataTable, "/dependencies/datatables_js.js");Blueprint.verifyResource("js", window.angular, "/dependencies/angular_js.js");Blueprint.verifyResource("js", window.requirejs, "/dependencies/requirejs.js");</script>
+		<link rel="stylesheet" type="text/css" href="./Column Blueprint Configuration_files/main.scss">
+		<link rel="stylesheet" type="text/css" href="./Column Blueprint Configuration_files/datatables.config.scss">
+		
+		<script src="./Column Blueprint Configuration_files/app.js.download"></script>
+		<script src="./Column Blueprint Configuration_files/main.js.download"></script>
+	<script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="utils/AdditiveList" src="./Column Blueprint Configuration_files/AdditiveList.js.download"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="utils/FileUpload" src="./Column Blueprint Configuration_files/FileUpload.js.download"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="utils/Messaging" src="./Column Blueprint Configuration_files/Messaging.js.download"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="utils/FormBuilder" src="./Column Blueprint Configuration_files/FormBuilder.js.download"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="utils/Modals" src="./Column Blueprint Configuration_files/Modals.js.download"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="app/LoggedInUser" src="./Column Blueprint Configuration_files/LoggedInUser.js.download"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="app/Modules" src="./Column Blueprint Configuration_files/Modules.js.download"></script></head>
+	<body>
+		<section class="header">
+			<div class="col-xs-1 logo">
+				<img src="./Column Blueprint Configuration_files/column-technologies.png" alt="Column Technologies">
+			</div>
+			<div class="col-xs-9">
+				<h1>Column Blueprint Configuration</h1>
+			</div>
+			<div class="col-xs-2">
+				<span class="user-info" id="logged-in-user-info"><span class="user-full-name">Blueprint Admin</span>&nbsp;&nbsp;<i class="fa fa-chevron-circle-down"></i></span>
+				<div id="user-info-panel" class="hide">
+					<div class="caret"></div>
+					<div class="col-xs-6" id="user-icon">
+						<i class="fa fa-user-circle-o"></i>
+					</div>
+					<div class="col-xs-6">
+						<button class="btn btn-secondary">Profile</button>
+						<button class="btn btn-primary" id="logout">Logout</button>
+					</div>
+				</div>
+			</div>
+		</section>
+		<section class="content">
+			<div id="sidebar" class="sidebar-1 col-xs-1">
+				
+			</div>
+			<div class="frame col-xs-11">
+				<div id="sub-sidebar" class="sidebar-2 col-xs-2 hide">
+					<div id="slide-button fa fa-bars"></div>
+				</div>
+				<div id="frame" class="col-xs-12">
+				
+				</div>
+			</div>
+		</section>
+	
+<div class="modal-background"><div class="modal-panel"><div class="modal-details"><div class="row"><section class="info-card col-xs-3"><i class="fa fa-exclamation-circle error"></i></section><section class="text col-xs-9"><span>Error retrieving application module configuration.</span></section></div></div><section class="modal-buttons-container"><button class="btn btn-secondary">OK</button></section></div></div></body></html>

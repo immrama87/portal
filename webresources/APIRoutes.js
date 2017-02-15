@@ -1,9 +1,13 @@
-var APIRoutes = (function(app){
+var APIRoutes = (function(){
 	var api = {};
 	
 	var baseUrl = "/rest/v1";
 	
-	api.createParameter = function(param, process){
+	api.configureRouteAuthorization = function(app, routeUrl, roles, handleFail){
+		server.authorizationService.configureRouteAuthorization(app, baseUrl + ((routeUrl.charAt(0) == "/") ? "" : "/") + routeUrl, roles, handleFail);
+	}
+	
+	api.createParameter = function(app, param, process){
 		app.param(param, function(req, res, next, id){
 			req[param] = id;
 			if(typeof process == "function"){
@@ -15,7 +19,7 @@ var APIRoutes = (function(app){
 		});
 	}
 	
-	api.registerRoute = function(routeUrl){
+	api.registerRoute = function(app, routeUrl){
 		return app.route(baseUrl + ((routeUrl.charAt(0) == "/") ? "" : "/") + routeUrl);
 	}
 	

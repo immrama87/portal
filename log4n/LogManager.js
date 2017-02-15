@@ -17,11 +17,12 @@ var LogManager = (function(appRoot){
 				else {
 					try{
 						logConfig = JSON.parse(file);
-						
+						console.log("log4n Initializing loggers...");
 						var appenders = {};
 						
 						for(var log in logConfig.logs){
 							loggers[log] = new Logger();
+							console.log("log4n Initializing logger '" + log + "'...");
 							var logAppenders = logConfig.logs[log].appenders.split(", ");
 							for(var i=0;i<logAppenders.length;i++){
 								if(!appenders.hasOwnProperty(logAppenders[i])){
@@ -31,11 +32,13 @@ var LogManager = (function(appRoot){
 											logConfig.appenders[logAppenders[i]].appRoot = appRoot;
 											appenders[logAppenders[i]] = require(appenderPath)(logConfig.appenders[logAppenders[i]]);
 											loggers[log].addAppender(appenders[logAppenders[i]]);
+											console.log("\tlog4n Added appender '" + logAppenders[i] + "' of type '" + logConfig.appenders[logAppenders[i]].appender + "' to logger '" + log + "'.");
 										}
 									}
 								}
 								else {
 									loggers[log].addAppender(appenders[logAppenders[i]]);
+									console.log("\tlog4n Added appender '" + logAppenders[i] + "' of type '" + logConfig.appenders[logAppenders[i]].appender + "' to logger '" + log + "'.");
 								}
 							}
 							loggers[log].setLevel(logConfig.logs[log].level);

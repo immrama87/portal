@@ -1,0 +1,49 @@
+@import 'colors';
+@import 'mixins';
+
+div#directories-list{
+	height:50%;
+}
+
+div#directories-list div.directory{
+	width:85%;
+	margin-left:5%;
+	height:3em;
+	font-size:1.5em;
+	padding-left:1em;
+	@include border-radius(0.5em);
+	cursor:pointer;
+}
+
+div#directories-list div.directory:hover{
+	background:$medium-grey;
+}
+
+div#directories-list div.directory span.text{
+	display:inline-block;
+	height:3em;
+	line-height:3em;
+}
+
+div#directories-list div.directory span.delete{
+	display:inline-block;
+	height:3em;
+	line-height:3em;
+	margin-right:1em;
+	float:right;
+}
+
+div#directories-list div.directory span.delete:hover{
+	color:$btstrp-red;
+}
+	
+div#directories-list div#add-directory{
+	color:$light-grey;
+	border:1px dashed $light-grey;
+}
+
+div#directories-list div#add-directory:hover{
+	color:$darkest-grey;
+	border-color:$darkest-grey;
+	background:none;
+}

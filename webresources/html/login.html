@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Column Blueprint Login Page</title>
+		#{includeDependencies(exclude=[FontAwesome, Datatables CSS, Datatables JS])}
+		<link rel="stylesheet" type="text/css" href="/base/main.scss"/>
+		<link rel="stylesheet" type="text/css" href="/base/datatables.config.css"/>
+		
+		<script src="/main/login.js"></script>
+	</head>
+	<body>
+		<section class="container">
+			<div class="panel config login">
+				<div class="panel-heading">
+					<h3 class="text-center">Please login to continue</h3>
+				</div>
+				<div class="panel-body">
+					<div class="hide" id="errors">
+						<div class="text-danger text-center"><span id="errorText"></span></div>
+					</div>
+					<div class="input-group">
+						<div class="input-label required">Username</div>
+						<input class="input-field" id="username"/>
+					</div>
+					<div class="input-group">
+						<div class="input-label required">Password</div>
+						<input class="input-field" type="password" id="password"/>
+					</div>
+					
+					<section class="text-center">
+						<button class="btn btn-primary" id="login-btn">Login</button>
+					</section>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>

@@ -1,12 +1,19 @@
 var fs = require("fs");
 var path = require("path");
+var sass = require("node-sass");
 
 var WebServer = (function(){
 	var ws = {};
 	var hashTMLProcessor = require("./HashTMLProcessor");
 	
 	ws.serveError = function(errorCode, err, res){
+		if(res == undefined){
+			res = errorCode;
+		}
 		switch(errorCode){
+			case 401:
+				serve401(res);
+				break;
 			case 404:
 				serve404(res);
 				break;
@@ -16,9 +23,15 @@ var WebServer = (function(){
 		}
 	}
 	
-	ws.setupRoutes = function(app){
-		app.get("/**.html", function(req, res){
+	ws.setupRoutes = function(exp){
+		exp.get("/**.html", function(req, res){
 			var filePath = path.join(__dirname, "html", req.url);
+			if(req.url.indexOf("/modals") == 0){
+				var modalStart = req.url.indexOf("/", 1) + 1;
+				var modalEnd = req.url.indexOf("/", modalStart);
+				var modal = req.url.substring(modalStart, modalEnd);
+				filePath = path.join(__dirname, "modals", modal, "html", req.url.substring(req.url.lastIndexOf("/") + 1));
+			}
 			
 			res.setHeader("Content-Type", "text/html; charset=utf8");
 			res.status(200);
@@ -29,7 +42,7 @@ var WebServer = (function(){
 				serveFile(filePath, res);
 			}
 		});
-		app.get("/**.hashtml", function(req, res){
+		exp.get("/**.hashtml", function(req, res){
 			var filePath = path.join(__dirname, "html", req.url);
 			
 			res.setHeader("Content-Type", "text/html; charset=utf8");
@@ -39,8 +52,14 @@ var WebServer = (function(){
 				filePath = path.join(__dirname, "html", "/errors/404.html");
 			}
 		});
-		app.get("/**.css", function(req, res){
+		exp.get("/**.css", function(req, res){
 			var filePath = path.join(__dirname, "css", req.url);
+			if(req.url.indexOf("/modals") == 0){
+				var modalStart = req.url.indexOf("/", 1) + 1;
+				var modalEnd = req.url.indexOf("/", modalStart);
+				var modal = req.url.substring(modalStart, modalEnd);
+				filePath = path.join(__dirname, "modals", modal, "css", req.url.substring(req.url.lastIndexOf("/") + 1));
+			}
 			
 			res.setHeader("Content-Type", "text/css; charset=utf8");
 			res.status(200);
@@ -51,8 +70,45 @@ var WebServer = (function(){
 				serveFile(filePath, res);
 			}
 		});
-		app.get("/**.js", function(req, res){
+		exp.get("/**.scss", function(req, res){
+			var filePath = path.join(__dirname, "css", req.url);
+			if(req.url.indexOf("/modals") == 0){
+				var modalStart = req.url.indexOf("/", 1) + 1;
+				var modalEnd = req.url.indexOf("/", modalStart);
+				var modal = req.url.substring(modalStart, modalEnd);
+				filePath = path.join(__dirname, "modals", modal, "css", req.url.substring(req.url.lastIndexOf("/") + 1));
+			}
+			
+			res.setHeader("Content-Type", "text/css; charset=utf8");
+			res.status(200);
+			if(!fs.existsSync(filePath)){
+				serve404(res);
+			}
+			else {
+				sass.render({
+					file:			filePath,
+					includePaths:	[path.join(__dirname, "css", "base")]
+				}, function(err, result){
+					if(err){
+						exp.serveError(500, err, res);
+					}
+					else {
+						var css = result.css.toString();
+						res.setHeader("Content-Length", css.length);
+						res.end(css, "utf8");
+					}
+				});
+			}
+		});
+		exp.get("/**.js", function(req, res){
 			var filePath = path.join(__dirname, "js", req.url);
+			if(req.url.indexOf("/modals") == 0){
+				var modalStart = req.url.indexOf("/", 1) + 1;
+				var modalEnd = req.url.indexOf("/", modalStart);
+				var modal = req.url.substring(modalStart, modalEnd);
+				filePath = path.join(__dirname, "modals", modal, "js", req.url.substring(req.url.lastIndexOf("/") + 1, req.url.lastIndexOf("?")));
+				console.log(filePath);
+			}
 			
 			res.setHeader("Content-Type", "application/javascript; charset=utf8");
 			res.status(200);
@@ -63,14 +119,17 @@ var WebServer = (function(){
 				serveFile(filePath, res);
 			}
 		});
-		app.get(["/**.png", "/**.jpg"], function(req, res){
+		exp.get(["/**.png", "/**.jpg", "/**.jpeg", "/**.gif"], function(req, res){
 			var filePath = path.join(__dirname, "images", req.url);
 			
 			if(req.url.substring(req.url.lastIndexOf(".")) == ".png"){
 				res.setHeader("Content-Type", "image/png; charset=binary");
 			}
-			else if(req.url.substring(req.url.lastIndexOf(".")) == ".jpg"){
+			else if(req.url.substring(req.url.lastIndexOf(".")) == ".jpg" || req.url.substring(req.url.lastIndexOf(".")) == "jpeg"){
 				res.setHeader("Content-Type", "image/jpeg; charset=binary");
+			}
+			else if(req.url.substring(req.url.lastIndexOf(".")) == ".gif"){
+				res.setHeader("Content-Type", "image/gif; charset=binary");
 			}
 			res.status(200);
 			if(!fs.existsSync(filePath)){
@@ -80,6 +139,13 @@ var WebServer = (function(){
 				serveFile(filePath, res, "binary");
 			}
 		});
+	}
+	
+	function serve401(res){
+		res.status(401);
+		res.setHeader("Content-Type", "text/html; charset=utf8");
+		
+		serveFile(path.join(__dirname, "html", "/errors/401.html"), res, "utf8");
 	}
 	
 	function serve404(res){

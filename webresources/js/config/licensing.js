@@ -22,7 +22,7 @@ $(function(){
 			getLicenseDetails();
 		})
 		.fail(function(xhr, status, err){
-			alert("Error updating license key. Please check the system logs for more information.\nError message: " + err);
+			Blueprint.utils.Messaging.alert("Error updating license key.", true, err);
 		});
 	});
 });

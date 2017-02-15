@@ -9,37 +9,6 @@ var LicensingService = (function(){
 	var expireTimeout;
 	var expiringTimeout;
 	
-	function getServerId(){
-		if(serverId == null){
-			var mac;
-			var interfaces = os.networkInterfaces();
-			if(interfaces.hasOwnProperty("Local Area Connection")){
-				mac = interfaces["Local Area Connection"][0].mac;
-			}
-			else if(interfaces.hasOwnProperty("eth0")){
-				mac = interfaces["eth0"][0].mac;
-			}
-			else if(interfaces.hasOwnProperty("lo")){
-				mac = interfaces["lo"][0].mac;
-			}
-			else if(interfaces.hasOwnProperty("Wireless Network Connection")){
-				mac = interfaces["Wireless Network Connection"][0].mac;
-			}
-			else {
-				mac = interfaces[Object.keys(interfaces)[0]][0].mac;
-			}
-			mac = mac.replace(/:/g, "-");
-			var cipher = crypto.createCipher("aes128", mac);
-			serverId = cipher.update(os.hostname(), "utf8", "hex");
-			serverId += cipher.final("hex");
-			console.log(serverId);
-		}
-		
-		return serverId;
-	}
-	
-	ls.getServerId = getServerId;
-	
 	ls.getLicenseDetails = function(){
 		var expireDate = new Date(license.expires);
 		var now = new Date();
@@ -57,7 +26,7 @@ var LicensingService = (function(){
 	}
 	
 	ls.setLicenseDetails = function(licenseKey, next){
-		serverId = getServerId();
+		serverId = server.serverId;
 		
 		var licenseASCII = new Buffer(licenseKey, "base64").toString("ascii");
 		

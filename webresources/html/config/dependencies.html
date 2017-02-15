@@ -1,0 +1,52 @@
+<h2>Library Dependencies</h2>
+
+<table id="dependencies"></table>
+
+<button class="btn btn-primary btn-lg btn-block" id="add-dependency">Add Dependency</button>
+
+<div id="dependency-config" class="col-xs-12 panel config hide">
+	<strong>New Dependency</strong>
+	<div class="input-group">
+		<div class="input-label required">Name</div>
+		<input class="input-field" id="name"/>
+	</div>
+	
+	<div class="input-group">
+		<div class="input-label required">Type</div>
+		<select class="input-field" id="type">
+			<option></option>
+			<option value="js">Javascript</option>
+			<option value="css">Stylesheet</option>
+		</select>
+	</div>
+	
+	<div class="input-group">
+		<div class="input-label required">Dependency URL</div>
+		<input class="input-field" id="url"/>
+	</div>
+	
+	<div class="input-group">
+		<div class="input-label">Integrity Checksum<i id="integrity-faq-btn" class="fa fa-question-circle-o"></i></div>
+		<input class="input-field" id="integrity"/>
+		<div class="faq hide" id="integrity-faq">
+			<h4>What is an Integrity Checksum?</h4>
+			<p><i>A growing number of library providers are generating HTML snippet for their resources with a Subresource Integrity checksum. This helps to protect the users of their libraries as compliant browsers will not execute a resource with an integrity value unless the checksum of the response matches the value provided.</i></p>
+			<h4>How do I find the Integrity Checksum?</h4>
+			<p><i>On the site where you found the URL for your library, there was most likely a section with HTML snippets that you could copy/paste into your HTML to include the library in your project. In this snippet, there will be an </i>integrity<i> attribute if the library provider supports Subresource Integrity checks.</i></p>
+			<p id="sri-for-js"><i>For a Javascript resource, the snippet would look like:</i><br/>&lt;script src="&lt;dependency-url&gt;" <b class="highlight">integrity="&lt;hashing-algorithm&gt;-&lt;base-64-encoding-checksum&gt;"</b>&gt;&lt;/script&gt;</p>
+			<p id="sri-for-css"><i>For a Stylesheet resource, the snippet would look like:</i><br/>&lt;link href="&lt;dependency-url&gt;" rel="stylesheet" type="text/css" <b class="highlight">integrity="&lt;hashing-algorithm&gt;-&lt;base-64-encoded-checksum&gt;"</b> /&gt;</p>
+			<h4>What do I do if no Integrity Checksum is provided in the snippet?</h4>
+			<p><i>In cases where no Integrity Checksum is provided by the library provider, you can leave the </i>Integrity Checksum<i> field blank. Once the dependency file is retrieved, Blueprint will generate a SHA-384 checksum that can be used to verify the integrity of the library in all future requests.</i></p>
+		</div>
+	</div>
+	
+	<div class="input-group hide" id="validation-group">
+		<div class="input-label">Validate Object</div>
+		<textarea class="input-field" id="validation"></textarea>
+	</div>
+	
+	<section class="buttons-container">
+		<button class="btn btn-primary" id="dependency-submit">Save</button>
+		<button class="btn btn-secondary" id="dependency-cancel">Cancel</button>
+	</section>
+</div>

@@ -1,32 +1,37 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Column Technologies Portal App Configuration</title>
-		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
-		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
-		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
-		<link rel="stylesheet" type="text/css" href="/base/main.css"/>
-		<link rel="stylesheet" type="text/css" href="/base/datatables.config.css"/>
+		<title>Column Blueprint Configuration</title>
+		#{includeDependencies()}
+		<link rel="stylesheet" type="text/css" href="/base/main.scss"/>
+		<link rel="stylesheet" type="text/css" href="/base/datatables.config.scss"/>
 		
-		<script src="https://code.jquery.com/jquery-3.1.1.min.js"
-			integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-			crossorigin="anonymous"></script>
-		<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.2/require.min.js" data-main="/main/app.js"></script>
+		<script src="/main/app.js"></script>
 		<script src="/config/main.js"></script>
 	</head>
 	<body>
 		<section class="header">
-			<div class="row">
-				<div class="col-md-2 logo">
-					<img src="/column-technologies.png" alt="Column Technologies"/>
-				</div>
-				<div class="container">
-					<h1>Portal App Configuration</h1>
+			<div class="col-xs-1 logo">
+				<img src="/column-technologies.png" alt="Column Technologies"/>
+			</div>
+			<div class="col-xs-9">
+				<h1>Column Blueprint Configuration</h1>
+			</div>
+			<div class="col-xs-2">
+				<span class="user-info" id="logged-in-user-info"><span class="user-full-name">Retrieving user info...</span>&nbsp;&nbsp;<i class="fa fa-chevron-circle-down"></i></span>
+				<div id="user-info-panel" class="hide">
+					<div class="caret"></div>
+					<div class="col-xs-6" id="user-icon">
+						<i class="fa fa-user-circle-o"></i>
+					</div>
+					<div class="col-xs-6">
+						<button class="btn btn-secondary" id="user-profile">Profile</button>
+						<button class="btn btn-primary" id="logout">Logout</button>
+					</div>
 				</div>
 			</div>
 		</section>
-		<section class="content">
+		<section class="content" id="content">
 			<div id="sidebar" class="sidebar-1 col-xs-1">
 				
 			</div>
