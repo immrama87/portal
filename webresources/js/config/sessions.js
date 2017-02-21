@@ -51,10 +51,10 @@ $(function(){
 		pagingType:		"first_last_numbers"
 	});
 	
-	buildTable();
+	buildTable(Blueprint.modules.activeModule().ready);
 });
 
-function buildTable(){
+function buildTable(next){
 	$.ajax({
 		method:		"get",
 		url:		"/rest/v1/config/sessions",
@@ -64,6 +64,9 @@ function buildTable(){
 		dataTable.clear();
 		dataTable.rows.add(response);
 		dataTable.draw();
+		if(typeof next == "function"){
+			next();
+		}
 	})
 	.fail(function(xhr, status, err){
 		Blueprint.utils.Messaging.alert("Error retrieving session data.", true, err);

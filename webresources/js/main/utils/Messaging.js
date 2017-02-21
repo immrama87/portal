@@ -108,6 +108,43 @@ define("utils/Messaging", [], function(){
 		});
 	}
 	
+	m.prompt = function(msg, next){
+		var modal = createMessageModal("OK|Cancel");
+		var content = document.createElement("div");
+		content.className = "row";
+		
+		var infoCardSection = document.createElement("section");
+		infoCardSection.className = "info-card col-xs-3";
+		var icon = document.createElement("i");
+		icon.className = "fa fa-info-circle info";
+		$(infoCardSection).append(icon);
+		$(content).append(infoCardSection);
+		
+		var textSection = document.createElement("section");
+		textSection.className = "text col-xs-9";
+		
+		var span = document.createElement("span");
+		$(span).html(msg.replace(/\n/g, "<br />"));
+		$(textSection).append(span);
+		var input = document.createElement("input");
+		$(span).append(input);
+		$(content).append(textSection);
+		
+		modal.setContent(content);
+		$(input).focus();
+		
+		modal.on("OK", function(){
+			if($(input).val() != ""){
+				modal.close();
+				next($(input).val());
+			}
+		});
+		
+		modal.on("Cancel", function(){
+			modal.close();
+		});
+	}
+	
 	function createMessageModal(btnType){
 		var handlers = {};
 		

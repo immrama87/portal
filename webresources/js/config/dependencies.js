@@ -166,10 +166,10 @@ $(function(){
 		}
 	});
 	
-	buildTable();
+	buildTable(Blueprint.modules.activeModule().ready);
 });
 
-function buildTable(){
+function buildTable(next){
 	$("#add-dependency").removeClass("hide");
 	$("#dependency-config").addClass("hide");
 	$.ajax({
@@ -181,6 +181,9 @@ function buildTable(){
 		dataTable.clear();
 		dataTable.rows.add(response);
 		dataTable.draw();
+		if(typeof next == "function"){
+			next();
+		}
 	});
 }
 

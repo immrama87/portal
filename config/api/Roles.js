@@ -60,6 +60,37 @@ var Roles = (function(app, ConfigException){
 		});
 		
 	server.api.createParameter(app, "roleId");
+	server.api.registerRoute(app, "config/roles/:roleId")
+		.get(function(req, res){
+			var session = server.db.getSession();
+			var statement = server.db.generatePreparedStatement({
+				action:		"read",
+				table:		"roles",
+				fields:		["name", "roleId"],
+				query:		{roleId: "#{roleId}"}
+			})
+			.withParam("roleId", req.roleId);
+			
+			session.execute(statement, function(err, findStatement){
+				if(err){
+					app.serveError(500, err, res);
+				}
+				else {
+					if(findStatement.getItems().length == 0){
+						var exc = new ConfigException({msg: "Request for role data could not be processed. No role with the ID '" + req.roleId + "' exists."});
+						app.serveError(500, exc, res);
+					}
+					else if(findStatement.getItems().length > 1){
+						var exc = new ConfigException({msg: "Request for role data could not be processed. Multiple roles with the ID '" + req.roleId + "' exist."});
+						app.serveError(500, exc, res);
+					}
+					else {
+						res.status(200).end(JSON.stringify(findStatement.iterator().next()));
+					}
+				}
+			});
+		});
+		
 	server.api.registerRoute(app, "config/roles/:roleId/users")
 		.get(function(req, res){
 			server.authorizationService.getUsersForRole(req.roleId, function(err, users){

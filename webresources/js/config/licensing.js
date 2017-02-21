@@ -43,5 +43,6 @@ function getLicenseDetails(){
 		}
 		
 		$("#license-status")[0].className = "detail-value " + response["status"];
+		Blueprint.modules.activeModule().ready();
 	});
 }

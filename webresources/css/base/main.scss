@@ -297,12 +297,21 @@ i.massive{
 			color:$light-grey;
 			display:inline-block;
 			vertical-align:top;
+			
+			&.required{
+				font-weight:bold;
+			}
 		}
 		
 		div.detail-value{
 			width:65%;
 			display:inline-block;
 			vertical-align:top;
+			
+			button.btn-link{
+				padding-top:0;
+				padding-bottom:0;
+			}
 		}
 		
 		&.block-group{
@@ -341,10 +350,6 @@ i.massive{
 		}
 	}
 	
-	section.buttons-container{
-		text-align:right;
-	}
-	
 	&.panel{
 		border:1px solid $pastel-blue-dark;
 		@include border-radius(0.5em);
@@ -356,6 +361,14 @@ i.massive{
 	}
 }
 
+section.buttons-container{
+	text-align:right;
+	
+	&.text-center{
+		text-align:center;
+	}
+}
+
 div.login{
 	margin-top:25%;
 }
@@ -364,9 +377,9 @@ div.additive-list{
 	font-size:1.25em;
 	background:$white;
 	padding:0.45em;
+	margin-bottom:1em;
 	@include border-radius(0.5em);
 	position:relative;
-	z-index:50;
 	
 	button{
 		font-size:1em;
@@ -449,6 +462,7 @@ div.additive-list{
 		font-size:0.8em;
 		position:absolute;
 		background:$white;
+		color:$medium-grey;
 		width:calc(100% - 1em);
 		cursor:pointer;
 		@include box-shadow(0.25em, 0.25em, 0.15em, rgba(0,0,0,0.1));
@@ -474,6 +488,7 @@ div.code{
 	padding:0.5em;
 	border-radius:0.5em;
 	font-family: $cutive;
+	color:$medium-grey;
 	background:white;
 	box-shadow:inset 0.25em 0.25em 0.15em rgba(0,0,0,0.1);
 }
@@ -538,6 +553,17 @@ div.modal-details{
 			display:table-cell;
 			vertical-align:middle;
 			width:100%;
+			
+			input{
+				width:100%;
+				font-size:1em;
+				padding:0.25em;
+				border-radius:0.5em;
+				outline:none;
+				border:1px solid $lightest-grey;
+				color:$black;
+				@include box-shadow(0.25em, 0.25em, 0.15em, rgba(0,0,0,0.1), $inset: true);
+			}
 		}
 	}
 }

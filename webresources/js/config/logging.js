@@ -9,6 +9,7 @@ $(function(){
 		for(var i=0;i<response.loggers.length;i++){
 			$("#loggers").append(generateLoggerItem(response.loggers[i]));
 		}
+		Blueprint.modules.activeModule().ready();
 	})
 	.fail(function(xhr, status, err){
 		Blueprint.utils.Messaging.alert("Error retrieving logger configuration.", true, err);
@@ -20,6 +21,7 @@ function generateLoggerItem(loggerName){
 	var loggerLink = document.createElement("a");
 	loggerLink.className = "logger btn-link";
 	loggerLink.href = "#";
+	loggerLink.id = loggerName;
 	$(loggerLink).text(loggerName);
 	$(item).append(loggerLink);
 	
@@ -30,7 +32,8 @@ function generateLoggerItem(loggerName){
 		$.ajax({
 			method:		"get",
 			url:		"/rest/v1/config/loggers/" + loggerName,
-			dataType:	"json"
+			dataType:	"json",
+			async:		false
 		})
 		.done(function(response){
 			showLoggerDetails(response, loggerName);
@@ -105,6 +108,7 @@ function generateAppenderItem(appenderName){
 	var appenderLink = document.createElement("a");
 	appenderLink.className = "appender btn-link";
 	appenderLink.href = "#";
+	appenderLink.id = "appender-" + appenderName;
 	$(appenderLink).text(appenderName);
 	$(item).append(appenderLink);
 	
@@ -115,7 +119,8 @@ function generateAppenderItem(appenderName){
 		$.ajax({
 			method:		"get",
 			url:		"/rest/v1/config/loggers/appenders/" + appenderName,
-			dataType:	"json"
+			dataType:	"json",
+			async:		false
 		})
 		.done(function(response){
 			showAppenderDetails(response, appenderName);
@@ -138,15 +143,18 @@ function showAppenderDetails(appenderConfig, appenderName){
 	if(appenderConfig.appender == "FileAppender"){
 		var showBtn = document.createElement("button");
 		showBtn.className = "btn btn-primary";
+		showBtn.id = "log-contents-btn";
 		$(showBtn).text("Show Log Contents");
 		
 		$(showBtn).on("click touch", function(evt){
 			$.ajax({
 				method:			"get",
 				url:			"/rest/v1/config/loggers/files/" + appenderName,
-				dataType:		"json"
+				dataType:		"json",
+				async:			false
 			})
 			.done(function(response){
+				console.log(response);
 				showLogData(response, appenderName);
 			})
 			.fail(function(xhr, status, err){
@@ -352,4 +360,23 @@ function showLogData(logData, appenderName){
 			Blueprint.utils.Messaging.alert("Error retrieving log file data for appender '" + appenderName + "'.", true, err);
 		});
 	});
+}
+
+Blueprint.modules.activeModule().setData = function(data){
+	if(data.length > 0){
+		$("#" + data[0]).click();
+		
+		if(data.length > 1){
+			$("#appender-" + data[1]).click();
+			
+			if(data.length > 2 && data[2] == "contents"){
+				$("#log-contents-btn").click();
+				
+				if(data.length > 3 && (data[3] == "10" || data[3] == "25" || data[3] == "50")){
+					$("#num-lines").val(data[3]);
+					$("#num-lines").change();
+				}
+			}
+		}
+	}
 }

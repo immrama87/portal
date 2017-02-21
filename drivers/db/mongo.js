@@ -453,7 +453,15 @@ module.exports = (function(){
 				}
 				else {
 					for(var j=0;j<fields.length;j++){
-						item[fields[j]] = items[i][fields[j]];
+						if(fields[j].indexOf("#[") > -1){
+							var start = fields[j].indexOf("#[");
+							var end = fields[j].indexOf("]", start);
+							var key = fields[j].substring(start+2, end);
+							item[key] = items[i][key] || [];
+						}
+						else {
+							item[fields[j]] = items[i][fields[j]];
+						}
 					}
 				}
 				_items.push(item);

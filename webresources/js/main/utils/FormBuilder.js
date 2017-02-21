@@ -44,7 +44,7 @@ define("utils/FormBuilder", [], function(){
 					}
 					
 					$(input).on("change", function(evt){
-						changed = true;
+						changed = checkChanged();
 					});
 					
 					var label = $(el).find("div.input-label").first();
@@ -182,6 +182,8 @@ define("utils/FormBuilder", [], function(){
 			var missing = [];
 			var warnings = [];
 			
+			changed = checkChanged();
+			
 			if(changed){
 				for(var field in fields){
 					var value = $(fields[field].input).val() || "";
@@ -251,6 +253,11 @@ define("utils/FormBuilder", [], function(){
 			}
 			
 			if(typeof options.submit == "function"){
+				for(var key in originalData){
+					if(!fieldData.hasOwnProperty(key)){
+						fieldData[key] = originalData[key];
+					}
+				}
 				options.submit(fieldData, listData);
 			}
 			else {
@@ -266,10 +273,7 @@ define("utils/FormBuilder", [], function(){
 		}
 		
 		f.clear = function(next){
-			for(var i=0;i<lists.length;i++){
-				listData = lists[i].getDifferences();
-				changed = changed || ((listData.added.length + listData.removed.length) > 0);
-			}
+			changed = checkChanged();
 			if(changed){
 				Blueprint.utils.Messaging.confirm("Changes have been made that will be lost if you proceed. Continue?", function(conf){
 					if(conf){
@@ -360,7 +364,7 @@ define("utils/FormBuilder", [], function(){
 				}
 			}
 			$(input).on("change", function(evt){
-				changed = true;
+				changed = checkChanged();
 			});
 			
 			$(inputGroup).append(input);
@@ -372,6 +376,27 @@ define("utils/FormBuilder", [], function(){
 			};
 			
 			return inputGroup;
+		}
+		
+		function checkChanged(){
+			for(var field in fields){
+				if((!originalData.hasOwnProperty(field)) && $(fields[field].input).val() != ""){
+					return true;
+				}
+				
+				if((originalData[field] != $(fields[field].input).val()) && (originalData.hasOwnProperty(field) && $(fields[field].input).val() != "")){
+					return true;
+				}
+			}
+			
+			for(var i=0;i<lists.length;i++){
+				listData = lists[i].getDifferences();
+				if(listData.added.length + listData.removed.length > 0){
+					return true;
+				}
+			}
+			
+			return false;
 		}
 		
 		return f;

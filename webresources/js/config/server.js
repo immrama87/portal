@@ -18,6 +18,7 @@ function initializeForms(){
 	})
 	.done(function(response){
 		populateForms(response);
+		Blueprint.modules.activeModule().ready();
 	})
 	.fail(function(xhr, status, err){
 		Blueprint.utils.Messaging.alert("Error retrieving current server configuration.", true, err);

@@ -111,51 +111,6 @@ var AuthorizationService = (function(){
 		else {
 			next();
 		}
-		
-		/*var session = req.session;
-		as.getRolesForUser(session.username, function(err, findResponse){
-			if(err){
-				next(err);
-			}
-			else {
-				var authorized = false;
-				var iter = findResponse.iterator();
-				while(iter.hasNext()){
-					if(iter.next().roleId == role){
-						authorized = true;
-						break;
-					}
-				}
-				
-				if(!authorized){
-					var groups = session.getGroups();
-					as.getGroupsForRole(role, function(groupErr, groupMembers){
-						if(groupErr){
-							next(groupErr);
-						}
-						else {
-							for(var i=0;i<groupMembers.length;i++){
-								if(groups.indexOf(groupMembers[i]) > -1){
-									authorized = true;
-									break;
-								}
-							}
-							
-							if(!authorized){
-								app.serveError(401, undefined, res);
-								return;
-							}
-							else {
-								next();
-							}
-						}
-					});
-				}	
-				else {
-					next();
-				}
-			}
-		});*/
 	}
 	
 	as.roleExists = function(roleId, next){

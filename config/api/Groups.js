@@ -20,7 +20,58 @@ var Groups = (function(app, ConfigException){
 		});
 		
 	server.api.createParameter(app, "groupName");
+	server.api.registerRoute(app, "config/groups/:groupName")
+		.get(function(req, res){
+			if(!server.hasOwnProperty("dirs")){
+				var err = new ConfigException({msg: "Request to get directory group details could not be processed. No group directories have been initialized."});
+				app.serveError(500, err, res);
+			}
+			else {
+				var collectionResourceResponse = new server.utils.CollectionResourceResponse(server.dirs, function(item, next, force){
+					item.getGroup(req.groupName, function(err, groupDetails){
+						if(err && err.errorCode != 0){
+							next(err);
+						}
+						else if(err && err.errorCode == 0){
+							next();
+						}
+						else {
+							groupDetails.directory = item.key;
+							force(groupDetails);
+						}
+					});
+				})
+				.oncomplete(function(results){
+					res.status(200).end(JSON.stringify(results));
+				})
+				.onfail(function(err){
+					app.serveError(500, err, res);
+				})
+				.process();
+			}
+		});
+		
 	server.api.registerRoute(app, "config/directories/:directoryId/groups/:groupName")
+		.get(function(req, res){
+			if(!server.hasOwnProperty("dirs")){
+				var err = new ConfigException({msg: "Request to get directory group details could not be processed. No group directories have been initialized."});
+				app.serveError(500, err, res);
+			}
+			else if(!server.dirs.hasOwnProperty(req.directoryId)){
+				var err = new ConfigException({msg: "Request to get directory group details could not be processed. No directory '" + req.directory + "' has been initialized."});
+				app.serveError(500, err, res);
+			}
+			else {
+				server.dirs[req.directoryId].getGroup(req.groupName, function(err, groupDetails){
+					if(err){
+						app.serveError(500, err, res);
+					}
+					else {
+						res.status(200).end(JSON.stringify(groupDetails));
+					}
+				});
+			}
+		})
 		.post(function(req, res){
 			updateGroup(req.directoryId, req.groupName, req.body, function(err){
 				if(err){

@@ -1,0 +1,37 @@
+<h2>Portal Configuration</h2>
+<div class="col-xs-12 col-md-4" id="portal-details">
+	<div class="panel config">
+		<h4>Portal Details</h4>
+		<div class="input-group">
+			<div class="input-label required">Portal Name</div>
+			<input class="input-field" id="name"/>
+		</div>
+		<div class="input-group">
+			<div class="input-label required">Context Path</div>
+			<input class="input-field" id="context"/>
+		</div>
+		<div class="input-group" id="color-scheme-group">
+			<div class="input-label required">Color Scheme</div>
+			<select class="input-field" id="color_scheme_id">
+			</select>
+			<div class="detail-value hide">I'm here!</div>
+		</div>
+		<strong>Authorized Groups</strong>
+		<div class="additive-list" id="authorized-groups" attr-name="Authorized Group" data-key="name" data-text="displayName" search-exclude="directory,readonly"/>
+		
+		<section class="buttons-container">
+			<button class="btn btn-primary" id="portal-submit">Save</button>
+			<button class="btn btn-secondary" id="portal-cancel">Cancel</button>
+		</section>
+	</div>
+	
+	<button class="btn btn-link hide" id="portal-delete">Delete portal</button>
+</div>
+
+<div class="col-xs-6 col-md-4">
+	<h4>Data Models <button id="add-model" class="btn btn-link">Add New Data Model</button></h4>
+</div>
+<div class="col-xs-6 col-md-4">
+	<h4>Screens <button id="add-screen" class="btn btn-link">Add New Screen</button></h4>
+	<div id="portal-screens"></div>
+</div>

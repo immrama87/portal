@@ -9,9 +9,10 @@ define("utils/Modals", [], function(){
 		var m = {};
 		opts = opts || {};
 		
-		var baseUrl = "modals" + ((base.charAt(0) == "/") ? "" : "/") + base + "/" + base;
+		var baseUrl = "/modals" + ((base.charAt(0) == "/") ? "" : "/") + base + "/";
 		var html, js, css;
 		var params = {};
+		var handlers = {};
 		
 		var background = document.createElement("div");
 		background.className = "modal-background";
@@ -33,7 +34,7 @@ define("utils/Modals", [], function(){
 		function loadHTML(){
 			$.ajax({
 				method:		"get",
-				url:		baseUrl + ".html",
+				url:		baseUrl + base + ".html",
 				dataType:	"text"
 			})
 			.done(function(response){
@@ -62,6 +63,7 @@ define("utils/Modals", [], function(){
 				css = data;
 			}, function(){
 				css = "";
+				checkComplete();
 			});
 		}
 		
@@ -70,6 +72,7 @@ define("utils/Modals", [], function(){
 				js = data;
 			}, function(){
 				js = "(function(){})";
+				checkComplete();
 			});
 		}
 		
@@ -79,6 +82,17 @@ define("utils/Modals", [], function(){
 				$(html).append("<script type='application/javascript'>var modalController = " + js + ";</script>");
 				$(panel).append(html);
 				$(document.body).append(background);
+				
+				panel.emit = function(event, data){
+					if(handlers.hasOwnProperty(event) && typeof handlers[event] == "function"){
+						handlers[event](data);
+					}
+				}
+				
+				panel.close = function(){
+					$(background).remove();
+				}
+				
 				modalController(panel, opts.data);
 			}
 		}
@@ -90,7 +104,7 @@ define("utils/Modals", [], function(){
 			if(params[param] === "true"){
 				$.ajax({
 					method:		"get",
-					url:		baseUrl + "." + ext,
+					url:		baseUrl + base + "." + ext,
 					dataType:	((ext == "js") ? "script" : "text")
 				})
 				.done(function(response){
@@ -103,6 +117,12 @@ define("utils/Modals", [], function(){
 			}
 			else {
 				noParam();
+			}
+		}
+		
+		m.on = function(event, handler){
+			if(typeof handler == "function"){
+				handlers[event] = handler;
 			}
 		}
 		

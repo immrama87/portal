@@ -352,7 +352,27 @@ function rebuildTable(){
 }
 
 Blueprint.modules.activeModule().setData = function(data){
-	
+	if(data.length == 1){
+		$.ajax({
+			method:		"get",
+			url:		"/rest/v1/config/groups/" + data[0],
+			dataType:	"json"
+		})
+		.done(function(results){
+			showGroupForm(results);
+		});
+	}
+	else if(data.length > 1){
+		$.ajax({
+			method:		"get",
+			url:		"/rest/v1/config/directories/" + data[0] + "/groups/" + data[1],
+			dataType:	"json"
+		})
+		.done(function(results){
+			results.directory = data[0];
+			showGroupForm(results);
+		})
+	}
 }
 
 Blueprint.modules.activeModule().destroy = function(next){

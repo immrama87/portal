@@ -1,0 +1,29 @@
+section.ramp{
+	height:5em;
+	line-height:5em;
+	
+	&.accent{
+		margin-bottom:3em;
+	}
+	
+	div{
+		text-align:center;
+		
+		&.name-div{
+			text-align:right;
+		}
+	}
+	
+	div.color-box{
+		width:5em;
+		height:5em;
+		margin:0 auto;
+		cursor:pointer;
+		
+		div.slider{
+			width:100%;
+			height:100%;
+			background:#FFFFFF;
+		}
+	}
+}

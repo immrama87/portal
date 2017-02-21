@@ -1,3 +1,7 @@
+var fs = require("fs");
+var path = require("path");
+var os = require("os");
+
 var Logging = (function(app, ConfigException){	
 	server.api.registerRoute(app, "config/loggers")
 		.get(function(req, res){
@@ -108,7 +112,7 @@ var Logging = (function(app, ConfigException){
 				else {
 					if(logConfigObj.appenders.hasOwnProperty(req.appenderId)){
 						if(logConfigObj.appenders[req.appenderId].hasOwnProperty("file")){
-							var filePath = path.join(__dirname, "..", logConfigObj.appenders[req.appenderId].file);
+							var filePath = path.join(__dirname, "../../", logConfigObj.appenders[req.appenderId].file);
 							if(!fs.existsSync(filePath)){
 								var exc = new ConfigException({msg: "Could not retrieve log file for appender '" + req.appenderId + "'. Configured file path does not exist."});
 								app.serveError(500, exc, res);

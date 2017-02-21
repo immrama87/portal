@@ -106,8 +106,13 @@ var WebServer = (function(){
 				var modalStart = req.url.indexOf("/", 1) + 1;
 				var modalEnd = req.url.indexOf("/", modalStart);
 				var modal = req.url.substring(modalStart, modalEnd);
-				filePath = path.join(__dirname, "modals", modal, "js", req.url.substring(req.url.lastIndexOf("/") + 1, req.url.lastIndexOf("?")));
-				console.log(filePath);
+				var fileStart = req.url.lastIndexOf("/");
+				var fileEnd = req.url.indexOf("?", fileStart);
+				if(fileEnd == -1){
+					fileEnd = req.url.length;
+				}
+				var fileName = req.url.substring(fileStart, fileEnd);
+				filePath = path.join(__dirname, "modals", modal, "js", fileName);
 			}
 			
 			res.setHeader("Content-Type", "application/javascript; charset=utf8");

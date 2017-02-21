@@ -1,0 +1,27 @@
+@import 'colors';
+
+div.portal-screen{
+	width:100%;
+	cursor:pointer;
+	
+	span.info{
+		font-size:1em;
+		display:table;
+		
+		i{
+			padding-right:1em;
+			height:2em;
+			display:table-cell;
+			vertical-align:middle;
+		}
+		
+		span{
+			font-size:2em;
+			display:table-cell;
+		}
+	}
+	
+	&:hover{
+		color:$pastel-blue;
+	}
+}

@@ -166,6 +166,7 @@ function buildTable(roles){
 	
 	getGroupsList();
 	getUsersList();
+	Blueprint.modules.activeModule().ready();
 }
 
 function getGroupsList(){
@@ -315,6 +316,17 @@ function clearForm(next){
 	if(next){
 		next();
 	}
+}
+
+Blueprint.modules.activeModule().setData = function(data){
+	$.ajax({
+		method:		"get",
+		url:		"/rest/v1/config/roles/" + data[0],
+		dataType:	"json"
+	})
+	.done(function(response){
+		showRoleForm(response);
+	});
 }
 
 Blueprint.modules.activeModule().destroy = function(next){

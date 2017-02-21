@@ -1,6 +1,10 @@
 define("app/Modules", [], function(){
 	var m = {};
+	var modules = [];
 	var activeModule = {};
+	var baseRoute = "";
+	var baseExtendedData = [];
+	var titleBase = "Column Blueprint";
 	
 	m.loadModules = function(url){
 		$.ajax({
@@ -9,9 +13,10 @@ define("app/Modules", [], function(){
 			dataType:	"json"
 		})
 		.done(function(response){
-			generateSidebar(response);
+			modules = response;
+			generateSidebar();
 			
-			checkForActiveModule(response);
+			checkForActiveModule();
 		})
 		.fail(function(xhr, status, err){
 			Blueprint.utils.Messaging.alert("Error retrieving application module configuration.", true, xhr.responseText);
@@ -22,17 +27,57 @@ define("app/Modules", [], function(){
 		return activeModule;
 	}
 	
-	function checkForActiveModule(modules){
+	m.setTitleBase = function(_titleBase){
+		titleBase = _titleBase;
+	}
+	
+	m.addSubmodules = function(parentName, submodules){
+		for(var i=0;i<modules.length;i++){
+			if(modules[i].name == parentName){
+				if(!modules[i].hasOwnProperty("submodules")){
+					modules[i].submodules = [];
+				}
+				
+				modules[i].submodules = modules[i].submodules.concat(submodules);
+				break;
+			}
+		}
+		
+		generateSidebar();
+		if(Object.keys(activeModule).length == 0){
+			checkForActiveModule();
+		}
+	}
+	
+	m.triggerModule = function(urlPath){
+		checkForActiveModule(urlPath);
+	}
+	
+	function checkForActiveModule(urlPath){
+		urlPath = urlPath || window.location.pathname;
 		var module;
 		for(var i=0;i<modules.length;i++){
-			if(window.location.pathname.indexOf(modules[i].baseRoute) == 0){
+			if(urlPath.indexOf(modules[i].baseRoute) == 0){
 				clickSidebarLink(modules[i], "#sidebar", document.getElementById(modules[i].name.replace(/\s/g, "_")));
 				module = modules[i];
 			}
 			
 			if(modules[i].hasOwnProperty("submodules")){
 				for(var j=0;j<modules[i].submodules.length;j++){
-					if(window.location.pathname.indexOf(modules[i].submodules[j].baseRoute) == 0){
+					if(urlPath.indexOf(modules[i].submodules[j].baseRoute) == 0){
+						var extendedData = urlPath.substring(modules[i].submodules[j].baseRoute.length + 1);
+						if(extendedData == ""){
+							extendedData = undefined;
+						} 
+						else {
+							extendedData = extendedData.split("/");
+						}
+						
+						
+						if(!Blueprint.utils.ArrayCompare.compare(extendedData, modules[i].submodules[j].extendedData)){
+							continue;
+						}
+						
 						clickSidebarLink(modules[i], "#sidebar", document.getElementById(modules[i].name.replace(/\s/g, "_")));
 						clickSidebarLink(modules[i].submodules[j], "#sub-sidebar", document.getElementById(modules[i].submodules[j].name.replace(/\s/g, "_")));
 						module = modules[i].submodules[j];
@@ -42,18 +87,29 @@ define("app/Modules", [], function(){
 			}
 			
 			if(module != undefined){
-				var extendedData = window.location.pathname.substring(module.baseRoute.length + 1);
+				var extendedData = urlPath.substring(module.baseRoute.length + 1);
 				if(extendedData != ""){
 					activeModule.data = extendedData.split("/");
 				}
 				break;
 			}
 		}
+		
+		if(module == undefined){
+			$("#frame").html("");
+			$("#sidebar").find(".selected").removeClass("selected");
+			$("#sub-sidebar").addClass("hide");
+			$(document.head).find("#module-script").remove();
+			$(document.head).find("#module-style").remove();
+		}
 	}
 	
-	function generateSidebar(modules){
+	function generateSidebar(){
+		$("#sidebar").html("");
 		for(var i=0;i<modules.length;i++){
-			$("#sidebar").append(generateSidebarLink(modules[i]));
+			if(!modules[i].hidden){
+				$("#sidebar").append(generateSidebarLink(modules[i]));
+			}
 		}
 	}
 
@@ -76,6 +132,21 @@ define("app/Modules", [], function(){
 	}
 
 	function clickSidebarLink(module, parent, link){
+		var route = module.baseRoute;
+		var extendedData = module.extendedData || [];
+		if(route != baseRoute || !Blueprint.utils.ArrayCompare.compare(extendedData, baseExtendedData)){
+			if(activeModule.hasOwnProperty("destroy")){
+				activeModule.destroy(function(){
+					triggerSidebarLink(module, parent, link);
+				});
+			}
+			else {
+				triggerSidebarLink(module, parent, link);
+			}
+		}
+	}
+	
+	function triggerSidebarLink(module, parent, link){
 		$(parent).find("div.link.selected").removeClass("selected");
 		$(link).addClass("selected");
 		if(module.hasOwnProperty("submodules")){
@@ -86,14 +157,7 @@ define("app/Modules", [], function(){
 				$("#sub-sidebar").find("div.slide-button").addClass("hide");
 			}
 			$("#sub-sidebar").addClass("out");
-			if(activeModule.hasOwnProperty("destroy")){
-				activeModule.destroy(function(){
-					loadModule(module);
-				});
-			}
-			else {
-				loadModule(module);
-			}
+			loadModule(module);
 		}
 	}
 
@@ -114,78 +178,130 @@ define("app/Modules", [], function(){
 	}
 
 	function loadModule(module){
+		var startTime = Date.now();
 		activeModule = {};
 		
 		$(document.head).find("#module-script").remove();
 		$(document.head).find("#module-style").remove();
 		var route = module.baseRoute;
-		if(route != baseRoute){
-			var overlay = document.createElement("div");
-			overlay.className = "module-overlay";
-			$(overlay).css({
-				"left": $("#sidebar").css("width"),
-				"width": "calc(100% - " + $("#sidebar").css("width") + ")"
-			});
-			
-			var loading = document.createElement("div");
-			var img = document.createElement("img");
-			img.src = "/loading.gif";
-			$(loading).append(img);
-			
-			var span = document.createElement("span");
-			$(span).text("Loading...");
-			$(loading).append(span);
-			$(overlay).append(loading);
-			
-			$("#content").append(overlay);
-			
-			activeModule.ready = function(){
-				$(overlay).remove();
-				if(activeModule.hasOwnProperty("setData") && activeModule.hasOwnProperty("data")){
-					activeModule.setData(activeModule.data);
-				}
+		var extendedData = module.extendedData || [];
+
+		if(extendedData.length > 0){
+			activeModule.data = extendedData;
+		}
+		var overlay = document.createElement("div");
+		overlay.className = "module-overlay";
+		$(overlay).css({
+			"left": $("#sidebar").css("width"),
+			"width": "calc(100% - " + $("#sidebar").css("width") + ")"
+		});
+		
+		var loading = document.createElement("div");
+		var img = document.createElement("img");
+		img.src = "/loading.gif";
+		$(loading).append(img);
+		
+		var span = document.createElement("span");
+		$(span).text("Loading...");
+		$(loading).append(span);
+		$(overlay).append(loading);
+		
+		$("#content").append(overlay);
+		
+		activeModule.ready = function(){
+			var endTime = Date.now();
+			if(endTime - startTime < 500){
+				window.setTimeout(function(){
+					activeModule.ready();
+				}, 500 - (endTime - startTime));
 			}
-			$.ajax({
-				method:		"get",
-				url:		route + ".html",
-				dataType:	"html"
-			})
-			.done(function(response){
-				baseRoute = route;
-				$("#frame").html(response);
+			else {
+				$("div.module-overlay").remove();
 				
-				if(module.hasJs){
-					var script = document.createElement("script");
-					script.type = "application/javascript";
-					script.src = route + ".js";
-					script.id = "module-script";
-					document.head.appendChild(script);
+				var urlPath = module.baseRoute;
+				if(activeModule.hasOwnProperty("data")){
+					for(var i=0;i<activeModule.data.length;i++){
+						urlPath += "/" + activeModule.data[i];
+					}
+					
+					if(activeModule.hasOwnProperty("setData")){
+						activeModule.setData(activeModule.data);
+					}
 				}
-				
-				if(module.hasCss){
+				else if(module.requiresData){
+					Blueprint.utils.Messaging.alert("Could not complete request. The module requested requires data to be provided.", true);
+					window.history.back();
+					return;
+				}
+				addHistoryState(module, urlPath);
+			}
+		}
+		$.ajax({
+			method:		"get",
+			url:		route + ".html",
+			dataType:	"html"
+		})
+		.done(function(response){
+			baseRoute = route;
+			baseExtendedData = extendedData;
+			$("#frame").html(response);
+			
+			if(module.hasJs){
+				var script = document.createElement("script");
+				script.type = "application/javascript";
+				script.src = route + ".js";
+				script.id = "module-script";
+				document.head.appendChild(script);
+			}
+			else {
+				activeModule.ready();
+			}
+			
+			if(module.hasCss){
+				var style = document.createElement("style");
+				style.id = "module-style";
+				style.type = "text/css";
+				style.href = route + ".css";
+				document.head.appendChild(style);
+			}
+			
+			if(module.hasScss){
+				$.ajax({
+					method: 	"get",
+					url:		route + ".scss",
+					dataType:	"text",
+					cache:		true
+				})
+				.done(function(styleResponse){
 					var style = document.createElement("style");
 					style.id = "module-style";
-					style.type = "text/css";
-					style.href = route + ".css";
+					$(style).html(styleResponse);
+					
 					document.head.appendChild(style);
-				}
-				
-				if(module.hasScss){
-					$.ajax({
-						method: 	"get",
-						url:		route + ".scss",
-						dataType:	"text",
-						cache:		true
-					})
-					.done(function(styleResponse){
-						var style = document.createElement("style");
-						style.id = "module-style";
-						$(style).html(styleResponse);
-						
-						document.head.appendChild(style);
-					});
-				}
-			});
+				});
+			}
+		});
+	}
+	
+	function addHistoryState(module, urlPath){
+		if(module.hasOwnProperty("title")){
+			document.title = titleBase + " || " + module.title;
+		}
+		else {
+			document.title = titleBase + " || " + module.name;
+		}
+		
+		window.history.pushState({"path": urlPath, "pageTitle": document.title}, "", urlPath);
+	}
+	
+	window.onpopstate = function(evt){
+		var urlPath = "";
+		if(evt.state){
+			urlPath = evt.state.path;
+			checkForActiveModule(urlPath);
+		}
+		else {
+			window.location.reload();
 		}
 	}
 	

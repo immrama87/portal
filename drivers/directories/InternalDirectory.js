@@ -194,6 +194,36 @@ var InternalDirectory = (function(){
 		});
 	}
 	
+	id.getGroup = function(groupName, next){
+		var session = server.db.getSession();
+		var statement = server.db.generatePreparedStatement({
+			action:	"read",
+			table:	"groups",
+			fields:	["name", "displayName"],
+			query:	{name: "#{groupName}"}
+		})
+		.withParam("groupName", groupName);
+		
+		session.execute(statement, function(err, findResponse){
+			if(err){
+				next(err);
+			}
+			else {
+				if(findResponse.getItems().length > 1){
+					var exc = new InternalDirectoryException({msg: "Multiple groups with group name '" + groupName + "' were found. Could not retrieve group details."});
+					next(exc);
+				}
+				else if(findResponse.getItems().length == 0){
+					var exc = new InternalDirectoryException({code: 0, msg: "No group with group name '" + groupName + "' could be found."});
+					next(exc);
+				}
+				else {
+					next(undefined, findResponse.iterator().next());
+				}
+			}
+		});
+	}
+	
 	id.getGroupsForUser = function(username, next){
 		var session = server.db.getSession();
 		var statement = server.db.generatePreparedStatement({

@@ -1,0 +1,80 @@
+<param id="hasCss" value="false"/>
+<param id="hasScss" value="true"/>
+<param id="hasJs" value="true"/>
+<h4>Please select a color</h4>
+<div class="row">
+	<div class="col-xs-6" id="color-wheel-div">
+		<canvas id="color-wheel"></canvas>
+	</div>
+	<div class="col-xs-6">
+		<div class="row">
+			<div class="col-xs-4 config">
+				<h4 class="text-center">CMYK</h4>
+				<div class="input-group">
+					<div class="input-label">C</div>
+					<input class="input-field" type="number" id="cyan"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">M</div>
+					<input class="input-field" type="number" id="magenta"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">Y</div>
+					<input class="input-field" type="number" id="yellow"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">K</div>
+					<input class="input-field" type="number" id="key"/>
+				</div>
+			</div>
+			<div class="col-xs-4 config">
+				<h4 class="text-center">HSL</h4>
+				<div class="input-group">
+					<div class="input-label">H</div>
+					<input class="input-field" type="number" id="hue"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">S</div>
+					<input class="input-field" type="number" id="saturation"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">L</div>
+					<input class="input-field" type="number" id="luminosity"/>
+				</div>
+			</div>
+			<div class="col-xs-4 config">
+				<h4 class="text-center">RGB</h4>
+				<div class="input-group">
+					<div class="input-label">R</div>
+					<input class="input-field" type="number" id="red"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">G</div>
+					<input class="input-field" type="number" id="green"/>
+				</div>
+				<div class="input-group">
+					<div class="input-label">B</div>
+					<input class="input-field" type="number" id="blue"/>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-2 color-swatch-div">
+				<div id="color-swatch"/>
+			</div>
+			<div class="col-xs-10 config">
+				<h4 class="text-center">Hex</h4>
+				<div class="input-group">
+					<div class="input-label">Hex Code</div>
+					<input class="input-field" id="hex"/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<section class="buttons-container text-center clearfix">
+		<button class="btn btn-primary" id="color-submit">Select</button>
+		<button class="btn btn-secondary" id="color-cancel">Cancel</button>
+	</section>
+</div>
