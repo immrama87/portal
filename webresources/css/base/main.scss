@@ -201,8 +201,16 @@ section.content{
 	}
 }
 
-i.massive{
-	font-size:10em;
+i.fa {
+	&.massive{
+		font-size:10em;
+	}
+	&.larger{
+		font-size:7em;
+	}
+	&.large{
+		font-size:3em;
+	}
 }
 
 *.config{
@@ -501,11 +509,34 @@ div.modal-background{
 	left:0;
 	background:rgba(0,0,0,0.5);
 	z-index:1000;
+	
+	div.close{
+		position:absolute;
+		font-size:1.5em;
+		line-height:2em;
+		text-align:center;
+		top:-1.5em;
+		right:-1em;
+		width:2em;
+		height:2em;
+		background:$light-grey;
+		color:$whitesmoke;
+		@include border-radius(1em);
+		opacity:1;
+		text-shadow:none;
+		
+		&:hover{
+			background:$medium-grey;
+			color:$darkest-grey;
+		}
+	}
 }
 
 div.modal-panel{
 	width:30%;
 	height:30%;
+	overflow-y:auto;
+	overflow-x:hidden;
 	position:absolute;
 	left:35%;
 	top:35%;
@@ -516,6 +547,26 @@ div.modal-panel{
 	color:$lightest-grey;
 	border-radius:0.5em;
 	box-shadow:0.25em 0.25em 0.25em rgba(0,0,0,0.1);
+	
+	div.dataTables_wrapper{
+		table{
+			border:none;
+			tbody, thead{
+				background:none !important;
+				color:inherit;
+				border:none;
+				tr{
+					background:none !important;
+					color:inherit;
+					
+					td, th{
+						border:none;
+						padding-left:1em;
+					}
+				}
+			}
+		}
+	}
 }
 
 div.modal-details{

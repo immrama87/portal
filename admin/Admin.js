@@ -4,6 +4,7 @@ var Admin = (function(){
 	var a = {};
 	
 	var versionManager = require("./VersionManager")();
+	var auditManager = require("./AuditManager")();
 	
 	var modules = [
 		{
@@ -40,9 +41,11 @@ var Admin = (function(){
 				}
 			});
 		server.api.configureRouteAuthorization(app, "/admin", ["300"]);
+		versionManager.setupRoutes(app);
+		auditManager.setupRoutes(app);
 		require("./api/Portals")(app, versionManager, AdminException);
 		require("./api/Screens")(app, versionManager, AdminException);
-		require("./api/Colors")(app, versionManager, AdminException);
+		require("./api/Colors")(app, versionManager, auditManager, AdminException);
 		require("./api/Config")(app, AdminException);
 	}
 	

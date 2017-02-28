@@ -23,5 +23,24 @@ define("utils/ArrayCompare", [], function(){
 		return true;
 	}
 	
+	ac.containsAll = function(arr1, arr2){
+		if(arr1 == undefined && arr2 == undefined){
+			return true;
+		}
+		else if(arr1 == undefined || arr2 == undefined){
+			return false;
+		}
+		if(!Array.isArray(arr2)){
+			return false;
+		}
+		for(var i=0;i<arr1.length;i++){
+			if(arr2.indexOf(arr1[i]) == -1){
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	return ac;
 });

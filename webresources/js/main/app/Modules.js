@@ -1,10 +1,13 @@
-define("app/Modules", [], function(){
+define("app/Modules", ["app/ChangeManager"], function(ChangeManager){
 	var m = {};
+	m.changeManager = ChangeManager;
+	
 	var modules = [];
 	var activeModule = {};
 	var baseRoute = "";
 	var baseExtendedData = [];
 	var titleBase = "Column Blueprint";
+	var solitaire;
 	
 	m.loadModules = function(url){
 		$.ajax({
@@ -15,8 +18,6 @@ define("app/Modules", [], function(){
 		.done(function(response){
 			modules = response;
 			generateSidebar();
-			
-			checkForActiveModule();
 		})
 		.fail(function(xhr, status, err){
 			Blueprint.utils.Messaging.alert("Error retrieving application module configuration.", true, xhr.responseText);
@@ -44,10 +45,9 @@ define("app/Modules", [], function(){
 		}
 		
 		generateSidebar();
-		if(Object.keys(activeModule).length == 0){
-			checkForActiveModule();
-		}
 	}
+	
+	m.checkForActiveModule = checkForActiveModule;
 	
 	m.triggerModule = function(urlPath){
 		checkForActiveModule(urlPath);
@@ -56,6 +56,7 @@ define("app/Modules", [], function(){
 	function checkForActiveModule(urlPath){
 		urlPath = urlPath || window.location.pathname;
 		var module;
+		var closestMatch;
 		for(var i=0;i<modules.length;i++){
 			if(urlPath.indexOf(modules[i].baseRoute) == 0){
 				clickSidebarLink(modules[i], "#sidebar", document.getElementById(modules[i].name.replace(/\s/g, "_")));
@@ -73,8 +74,12 @@ define("app/Modules", [], function(){
 							extendedData = extendedData.split("/");
 						}
 						
-						
-						if(!Blueprint.utils.ArrayCompare.compare(extendedData, modules[i].submodules[j].extendedData)){
+						if(modules[i].submodules[j].extendedData == undefined && extendedData != undefined){
+							closestMatch = modules[i].submodules[j];
+							continue;
+						}
+
+						if(!Blueprint.utils.ArrayCompare.containsAll(modules[i].submodules[j].extendedData, extendedData)){
 							continue;
 						}
 						
@@ -95,12 +100,39 @@ define("app/Modules", [], function(){
 			}
 		}
 		
-		if(module == undefined){
-			$("#frame").html("");
+		if(module == undefined && urlPath != "/"){
+			$.ajax({
+				method:		"get",
+				url:		"/admin/404.html",
+				dataType:	"html"
+			})
+			.done(function(response){
+				fourohfour = response;
+				$("#frame").html(response);
+				if(closestMatch != undefined){
+					$("#frame").find("#match").removeClass("hide").find("#match-link").attr("href", closestMatch.baseRoute).text(closestMatch.name);
+				}
+				window.setTimeout(function(){
+					$.ajax({
+						method:		"get",
+						url:		"/main/Solitaire.js",
+						dataType:	"script"
+					}).done(function(){
+						$("#frame").find("#cards").removeClass("hide");
+						if(solitaire == undefined){
+							solitaire = Solitaire("solitaire");
+						}
+					});
+				}, 1000);
+			});
+			
 			$("#sidebar").find(".selected").removeClass("selected");
 			$("#sub-sidebar").addClass("hide");
 			$(document.head).find("#module-script").remove();
 			$(document.head).find("#module-style").remove();
+		}
+		else if(module == undefined){
+			
 		}
 	}
 	
@@ -180,6 +212,17 @@ define("app/Modules", [], function(){
 	function loadModule(module){
 		var startTime = Date.now();
 		activeModule = {};
+		activeModule.updateHistoryState = function(data, title){
+			var urlPath = module.baseRoute;
+			for(var i=0;i<data.length;i++){
+				urlPath += "/" + data[i];
+			}
+			if(title){
+				module.title = title;
+			}
+			replaceHistoryState(module, urlPath);
+		}
+		m.changeManager.setModule(activeModule);
 		
 		$(document.head).find("#module-script").remove();
 		$(document.head).find("#module-style").remove();
@@ -232,6 +275,9 @@ define("app/Modules", [], function(){
 					Blueprint.utils.Messaging.alert("Could not complete request. The module requested requires data to be provided.", true);
 					window.history.back();
 					return;
+				}
+				else if(activeModule.hasOwnProperty("setData")){
+					activeModule.setData([]);
 				}
 				addHistoryState(module, urlPath);
 			}
@@ -292,6 +338,17 @@ define("app/Modules", [], function(){
 		}
 		
 		window.history.pushState({"path": urlPath, "pageTitle": document.title}, "", urlPath);
+	}
+	
+	function replaceHistoryState(module, urlPath){
+		if(module.hasOwnProperty("title")){
+			document.title = titleBase + " || " + module.title;
+		}
+		else {
+			document.title = titleBase + " || " + module.name;
+		}
+		
+		window.history.replaceState({"path": urlPath, "pageTitle": document.title}, "", urlPath);
 	}
 	
 	window.onpopstate = function(evt){

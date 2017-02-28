@@ -7,9 +7,10 @@ var WebServer = (function(){
 	var hashTMLProcessor = require("./HashTMLProcessor");
 	
 	ws.serveError = function(errorCode, err, res){
-		if(res == undefined){
+		if(!res){
 			res = errorCode;
 		}
+		
 		switch(errorCode){
 			case 401:
 				serve401(res);
@@ -40,16 +41,6 @@ var WebServer = (function(){
 			}
 			else {
 				serveFile(filePath, res);
-			}
-		});
-		exp.get("/**.hashtml", function(req, res){
-			var filePath = path.join(__dirname, "html", req.url);
-			
-			res.setHeader("Content-Type", "text/html; charset=utf8");
-			res.status(200);
-			if(!fs.existsSync(filePath)){
-				res.status(404);
-				filePath = path.join(__dirname, "html", "/errors/404.html");
 			}
 		});
 		exp.get("/**.css", function(req, res){
@@ -114,6 +105,9 @@ var WebServer = (function(){
 				var fileName = req.url.substring(fileStart, fileEnd);
 				filePath = path.join(__dirname, "modals", modal, "js", fileName);
 			}
+			else if(req.url.indexOf("?") > -1){
+				filePath = path.join(__dirname, "js", req.url.substring(0, req.url.indexOf("?")));
+			}
 			
 			res.setHeader("Content-Type", "application/javascript; charset=utf8");
 			res.status(200);
@@ -165,7 +159,12 @@ var WebServer = (function(){
 		res.setHeader("Content-Type", "text/html; charset=utf8");
 		server.errorLog.error(err);
 		
-		serveFile(path.join(__dirname, "html", "/errors/500.html"), res, "utf8");
+		if(res.req.url.indexOf(".html") > -1){
+			serveFile(path.join(__dirname, "html", "/errors/500.html"), res, "utf8");
+		}
+		else {
+			res.end(err.message);
+		}
 	}
 	
 	function serveFile(path, res, encoding){

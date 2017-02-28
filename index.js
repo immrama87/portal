@@ -214,6 +214,7 @@ function startApplication(config, startTime){
 				req.session = session;
 				var resCookie = CookieManager.createCookie();
 				resCookie.setValue("NSESSIONID", sessionId, 1);
+				resCookie.setPath("NSESSIONID", "/");
 				res.setHeader("Set-Cookie", resCookie.toString());
 				if(req.url == "/"){
 					req.url = "/admin";
@@ -238,7 +239,8 @@ function startApplication(config, startTime){
 					else {
 						var sessionId = server.sessionManager.createSession(req.body.username);
 						var resCookie = CookieManager.createCookie()
-						resCookie.setValue("NSESSIONID", sessionId, 1);
+						resCookie.setValue("NSESSIONID", sessionId, "/", 1);
+						resCookie.setPath("NSESSIONID", "/");
 						res.setHeader("Set-Cookie", resCookie.toString());
 						res.status(200).end();
 						var ip = req.headers["x-forwarded-for"] ||

@@ -82,10 +82,23 @@ define("utils/Modals", [], function(){
 				$(html).append("<script type='application/javascript'>var modalController = " + js + ";</script>");
 				$(panel).append(html);
 				$(document.body).append(background);
+				if(opts.closeButton){
+					var closeButton = document.createElement("div");
+					closeButton.className = "close";
+					$(closeButton).text("X");
+					$(closeButton).css({
+						top:	$(panel).offset().top - 16,
+						right:	$(panel).offset().left - 16
+					});
+					$(closeButton).on("click touch", function(){
+						$(background).remove();
+					});
+					$(background).append(closeButton);
+				}
 				
 				panel.emit = function(event, data){
 					if(handlers.hasOwnProperty(event) && typeof handlers[event] == "function"){
-						handlers[event](data);
+						handlers[event](data, panel);
 					}
 				}
 				

@@ -239,7 +239,7 @@ module.exports = (function(){
 	var MongoDbPreparedStatement = (function(queryObj){
 		var mdbps = {};
 		var params = {};
-		var action, collection, fields, query, values;
+		var action, collection, fields, query, values, sort;
 		var required = ["action", "table"];
 		
 		var missing = [];
@@ -261,6 +261,7 @@ module.exports = (function(){
 		fields = queryObj.fields || [];
 		query = queryObj.query || {};
 		values = queryObj.values || {};
+		sort = queryObj.sort || {};
 		
 		for(var key in query){
 			searchForParams(query[key]);
@@ -268,6 +269,11 @@ module.exports = (function(){
 		
 		for(var key in values){
 			searchForParams(values[key]);
+		}
+		
+		var sortArray = [];
+		for(var key in sort){
+			sortArray.push([key, sort[key]]);
 		}
 		
 		mdbps.withParam = function(param, value){
@@ -353,7 +359,7 @@ module.exports = (function(){
 				else if(Array.isArray(queryVal)){
 					query[key] = queryVal.join(",");
 				}
-				else {
+				else if(typeof query[key] != "object"){
 					query[key] = queryVal.toString();
 				}
 			}
@@ -374,7 +380,7 @@ module.exports = (function(){
 			
 			if(actions.hasOwnProperty(action)){
 				if(action == "read"){
-					actions[action](db, collection, fields, query, function(err, result){
+					actions[action](db, collection, fields, query, sortArray, function(err, result){
 						if(err){
 							errorLog.error(err);
 							next(err);
@@ -430,9 +436,9 @@ module.exports = (function(){
 	util.inherits(MongoDbExecutionException, Error);
 	
 	
-	function find(db, collection, fields, query, next){		
+	function find(db, collection, fields, query, sort, next){		
 		var coll = db.collection(collection);
-		coll.find(query).toArray(function(err, items){
+		coll.find(query, {sort: sort}).toArray(function(err, items){
 			if(err){
 				errorLog.error("An error occurred retrieving data from MongoDB.\nError Message: " + err);
 				next(err);
@@ -469,6 +475,10 @@ module.exports = (function(){
 			
 			fr.getItems = function(){
 				return _items;
+			}
+			
+			fr.get = function(index){
+				return _items[index];
 			}
 			
 			fr.iterator = function(){
@@ -508,7 +518,7 @@ module.exports = (function(){
 	function update(db, collection, values, query, next){
 		var coll = db.collection(collection);
 		values.modifiedAt = new Date().getTime().toString();
-		coll.update(query, {$set: values}, function(err, result){
+		coll.update(query, {$set: values}, {upsert: false, multi: true}, function(err, result){
 			next(err);
 		});
 	}

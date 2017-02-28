@@ -60,8 +60,8 @@ window.Blueprint = (function(){
 			requirejs.config({
 				baseUrl:	"/main"
 			});
-			requirejs(["utils/AdditiveList", "utils/FileUpload", "utils/Messaging", "utils/FormBuilder", "utils/Modals", "utils/ArrayCompare", "utils/Math", "utils/StringUtils", "utils/VersionManager"], 
-				function(AdditiveList, FileUpload, Messaging, FormBuilder, Modals, ArrayCompare, MathUtils, StringUtils, VersionManager){
+			requirejs(["utils/AdditiveList", "utils/FileUpload", "utils/Messaging", "utils/FormBuilder", "utils/Modals", "utils/ArrayCompare", "utils/Math", "utils/StringUtils", "utils/VersionManager", "utils/ColorUtils"], 
+				function(AdditiveList, FileUpload, Messaging, FormBuilder, Modals, ArrayCompare, MathUtils, StringUtils, VersionManager, ColorUtils){
 				bp.utils = {};
 				bp.utils.AdditiveList = AdditiveList;
 				bp.utils.FileUpload = FileUpload;
@@ -72,6 +72,7 @@ window.Blueprint = (function(){
 				bp.utils.Math = MathUtils;
 				bp.utils.StringUtils = StringUtils;
 				bp.utils.VersionManager = VersionManager;
+				bp.utils.ColorUtils = ColorUtils;
 			});
 			
 			if(!bp.isWizard){

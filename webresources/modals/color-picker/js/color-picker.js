@@ -7,17 +7,10 @@
 	canvas.height = height;
 	var context = canvas.getContext("2d");
 	
-	$("#color-cancel").on("click touch", function(evt){
-		modal.close();
-	});
-	
-	$("#color-submit").on("click touch", function(evt){
-		modal.emit("color-code", $("#hex").val());
-		modal.close();
-	});
-	
 	var colorWheel = (function(){
 		var cw = {};
+		var desaturated = false;
+		var luminenceBounds = [0, 1];
 		
 		var selection = {
 			h:	1,
@@ -29,31 +22,50 @@
 			return $(canvas).offset().left + (height - 16 * 2);
 		}
 		
-		cw.updateHS = function(evt){
-			evt.pageX -= $(canvas).offset().left;
-			evt.pageY -= $(canvas).offset().top;
-			var radius = (height - 16 * 3) / 2;
-			var xDist = evt.pageX - radius;
-			var yDist = evt.pageY - radius;
-			var totalDist = Math.sqrt((xDist * xDist) + (yDist * yDist));
-			selection.s = Blueprint.utils.Math.clamp(totalDist / radius, 0, 1);
-			
-			var angle = Math.atan2(yDist, xDist) * 180/Math.PI;
-			if(angle < 0){
-				angle += 360;
-			}
-			selection.h = angle;
+		cw.setDesaturated = function(){
+			desaturated = true;
 			draw();
+		}
+		
+		cw.setLuminenceBounds = function(start, end){
+			if(start > 1){
+				start = start / 100;
+			}
+			if(end > 1){
+				end = end / 100;
+			}
 			
-			$(canvas).on("mouseup", function(evt){
-				$(canvas).off("mousemove");
-			});
+			luminenceBounds = [start, end];
+			draw();
+		}
+		
+		cw.updateHS = function(evt){
+			if(!desaturated){
+				evt.pageX -= $(canvas).offset().left;
+				evt.pageY -= $(canvas).offset().top;
+				var radius = (height - 16 * 3) / 2;
+				var xDist = evt.pageX - radius;
+				var yDist = evt.pageY - radius;
+				var totalDist = Math.sqrt((xDist * xDist) + (yDist * yDist));
+				selection.s = Blueprint.utils.Math.clamp(totalDist / radius, 0, 1);
+				
+				var angle = Math.atan2(yDist, xDist) * 180/Math.PI;
+				if(angle < 0){
+					angle += 360;
+				}
+				selection.h = angle;
+				draw();
+				
+				$(canvas).on("mouseup", function(evt){
+					$(canvas).off("mousemove");
+				});
+			}
 		}
 		
 		cw.updateL = function(evt){
 			evt.pageY -= $(canvas).offset().top;
 			var total = (height - 16 * 3);
-			selection.l = 1 - Blueprint.utils.Math.clamp(evt.pageY / total, 0, 1);
+			selection.l = luminenceBounds[1] - (luminenceBounds[1] - luminenceBounds[0]) * Blueprint.utils.Math.clamp(evt.pageY / total, 0, 1);
 			draw();
 			
 			$(canvas).on("mouseup", function(evt){
@@ -181,7 +193,12 @@
 				context.closePath();
 				var grad = context.createLinearGradient(x, y, x + radius * Math.cos(endAngle), y + radius * Math.sin(endAngle));
 				grad.addColorStop(0, "hsl(" + a + ", 0%, 50%)");
-				grad.addColorStop(1, "hsl(" + a + ", 100%, 50%)");
+				if(desaturated){
+					grad.addColorStop(1, "hsl(" + a + ", 25%, 50%)");
+				}
+				else {
+					grad.addColorStop(1, "hsl(" + a + ", 100%, 50%)");
+				}
 				context.fillStyle = grad;
 				context.fill();
 			}
@@ -195,14 +212,15 @@
 			context.closePath();
 			context.stroke();
 			
-			var luminenceGrad = context.createLinearGradient(x + radius + (16 * 2), 0, x + radius + (16 * 4), y + radius);
-			luminenceGrad.addColorStop(0, "hsl(" + selection.h + ", " + (selection.s * 100) + "%, 100%)");
-			luminenceGrad.addColorStop(0.5, "hsl(" + selection.h + ", " + (selection.s * 100) + "%, 50%)");
-			luminenceGrad.addColorStop(1, "hsl(" + selection.h + ", " + (selection.s * 100) + "%, 0%)");
+			var luminenceGrad = context.createLinearGradient(x + radius + (16 * 2), 0, x + radius + (16 * 2), y + radius);
+			luminenceGrad.addColorStop(0, "hsl(" + selection.h + ", " + selection.s * 100 + "%, " + luminenceBounds[1] * 100 + "%)");
+			luminenceGrad.addColorStop(0.5, "hsl(" + selection.h + ", " + selection.s * 100 + "%, " + ((luminenceBounds[1] + luminenceBounds[0]) / 2) * 100 + "%)");
+			luminenceGrad.addColorStop(1, "hsl(" + selection.h + ", " + selection.s * 100 + "%, " + luminenceBounds[0] * 100 + "%)");
+			
 			context.fillStyle = luminenceGrad;
 			context.fillRect(x + radius + 16 * 2, 0, 16*2, y + radius);
 			
-			var lSelectionY = (y + radius) * (1 - selection.l);
+			var lSelectionY = (y + radius) * ((luminenceBounds[1] - selection.l) / (luminenceBounds[1] - luminenceBounds[0]));
 			context.beginPath();
 			context.rect(x + radius + 16 * 2 - 1, lSelectionY - 2, 16*2 + 2, 4);
 			context.stroke();
@@ -215,67 +233,25 @@
 			$("#saturation").val((selection.s * 100).toFixed(2));
 			$("#luminosity").val((selection.l * 100).toFixed(2));
 			
-			var c = (1 - Math.abs(2 * selection.l - 1)) * selection.s;
-			var x = c * (1 - Math.abs((selection.h / 60)%2 - 1));
-			var m = selection.l - c / 2;
-			
 			var r, g, b;
-			if(selection.h >= 0 && selection.h < 60){
-				r = c;
-				g = x;
-				b = 0;
-			}
-			else if(selection.h >= 60 && selection.h < 120){
-				r = x;
-				g = c;
-				b = 0;
-			}
-			else if(selection.h >= 120 && selection.h < 180){
-				r = 0;
-				g = c;
-				b = x;
-			}
-			else if(selection.h >= 180 && selection.h < 240){
-				r = 0;
-				g = x;
-				b = c;
-			}
-			else if(selection.h >= 240 && selection.h < 300){
-				r = x;
-				g = 0;
-				b = c;
-			}
-			else if(selection.h >= 300 && selection.h < 360){
-				r = c;
-				g = 0;
-				b = x;
-			}
+			var rgb = Blueprint.utils.ColorUtils.hslToRgb(selection.h, selection.s, selection.l);
+			r = rgb[0];
+			g = rgb[1];
+			b = rgb[2];
 			
-			r = r+m;
-			g = g+m;
-			b = b+m;
-			
-			var key = 1 - Math.max(r, g, b);
-			var cyan = (1 - r - key) / (1 - key) || 0;
-			var magenta = (1 - g - key) / (1 - key) || 0;
-			var yellow = (1 - b - key) / (1 - key) || 0;
-			
-			$("#key").val(key.toFixed(2));
-			$("#cyan").val(cyan.toFixed(2));
-			$("#magenta").val(magenta.toFixed(2));
-			$("#yellow").val(yellow.toFixed(2));
-			
-			r = Blueprint.utils.Math.clamp(parseInt(r * 255), 0, 255);
-			g = Blueprint.utils.Math.clamp(parseInt(g * 255), 0, 255);
-			b = Blueprint.utils.Math.clamp(parseInt(b * 255), 0, 255);
 			$("#red").val(r);
 			$("#green").val(g);
 			$("#blue").val(b);
 			
-			var hex = "#";
-			hex += Blueprint.utils.StringUtils.lPad(r.toString(16), 2, "0");
-			hex += Blueprint.utils.StringUtils.lPad(g.toString(16), 2, "0");
-			hex += Blueprint.utils.StringUtils.lPad(b.toString(16), 2, "0");
+			var cyan,magenta,yellow,key;
+			var cmyk = Blueprint.utils.ColorUtils.rgbToCmyk(r,g,b);
+			
+			$("#cyan").val(cmyk[0].toFixed(2));
+			$("#magenta").val(cmyk[1].toFixed(2));
+			$("#yellow").val(cmyk[2].toFixed(2));
+			$("#key").val(cmyk[3].toFixed(2));
+			
+			var hex = Blueprint.utils.ColorUtils.rgbToHex(r,g,b);
 			$("#hex").val(hex);
 			
 			$("#color-swatch").css("background", hex);
@@ -286,21 +262,60 @@
 		return cw;
 	})();
 	
-	$(modal).find("*.input-field").each(function(index, el){
-		$(el).on("change", function(evt){
-			colorWheel.updateValue(el.id, $(el).val());
-		});
-	});
-	
 	if(data.color){
 		colorWheel.setValue(data.color);
 	}
+	if(data.modifier){
+		var originalLuminence = parseFloat($("#luminosity").val());
+		colorWheel.updateValue("luminosity", originalLuminence + parseFloat(data.modifier));
+		colorWheel.setDesaturated();
+		if(data.swatchName){
+			switch(data.swatchName){
+				case "swatch-darkest":
+					colorWheel.setLuminenceBounds(0, originalLuminence + (data.modifier / 2));
+					break;
+				case "swatch-dark":
+					colorWheel.setLuminenceBounds(originalLuminence + (data.modifier * 2), originalLuminence);
+					break;
+				case "swatch-light":
+					colorWheel.setLuminenceBounds(originalLuminence, originalLuminence + (data.modifier * 2));
+					break;
+				case "swatch-lightest":
+					colorWheel.setLuminenceBounds(originalLuminence + (data.modifier / 2), 1);
+					break;
+			}
+			
+			$("#color-submit").on("click touch", function(evt){
+				data.modifier = parseFloat($("#luminosity").val()) - originalLuminence;
+				modal.emit("color-data", data);
+				modal.close();
+			});
+		}
+	}
+	else {
+		$("#color-submit").on("click touch", function(evt){
+			data.color = $("#hex").val();
+			modal.emit("color-data", data);
+			modal.close();
+		});
+		
+		$(modal).find("*.input-field").each(function(index, el){
+			$(el).on("change", function(evt){
+				colorWheel.updateValue(el.id, $(el).val());
+			});
+		});
+	}
+	
+	$("#color-cancel").on("click touch", function(evt){
+		modal.close();
+	});
 	
 	$(canvas).on("mousedown", function(evt){
 		if(evt.pageX < colorWheel.getSeparator()){
 			$(canvas).on("mousemove", colorWheel.updateHS);
 		}
 		else {
+			colorWheel.updateL(evt);
 			$(canvas).on("mousemove", colorWheel.updateL);
 		}
 	});

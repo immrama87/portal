@@ -11,6 +11,10 @@
 	&:hover{
 		color:$pastel-blue-light;
 	}
+	
+	&:focus{
+		outline:none;
+	}
 }
 
 a{

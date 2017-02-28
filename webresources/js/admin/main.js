@@ -1,6 +1,10 @@
 Blueprint.onready(function(){
 	Blueprint.modules.loadModules("/admin/modules");
+	loadPortalModules();
+	$("#logged-in-user-info").find("span.user-full-name").text(Blueprint.LoggedInUser.getName());
+});
 	
+function loadPortalModules(){
 	$.ajax({
 		method:		"get",
 		url:		"/rest/v1/admin/portals",
@@ -23,8 +27,11 @@ Blueprint.onready(function(){
 		});
 		
 		Blueprint.modules.addSubmodules("Portals", response);
+		loadColorSchemeModules();
 	});
-	
+}
+
+function loadColorSchemeModules(){
 	$.ajax({
 		method:		"get",
 		url:		"/rest/v1/admin/color-schemes",
@@ -42,11 +49,12 @@ Blueprint.onready(function(){
 			name:		"Add New Color Scheme",
 			baseRoute:	"/admin/color-schemes",
 			hasJs:		true,
-			hasScss:	true
+			hasScss:	true,
+			title:		"New Color Scheme Configuration"
 		});
 		
 		Blueprint.modules.addSubmodules("Color Schemes", response);
+		Blueprint.modules.checkForActiveModule();
 	});
 	
-	$("#logged-in-user-info").find("span.user-full-name").text(Blueprint.LoggedInUser.getName());
-});
+}

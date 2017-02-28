@@ -51,6 +51,12 @@ var CookieManager = (function(){
 			};
 		}
 		
+		c.setPath = function(key, path){
+			if(path != undefined){
+				values[key].path = path;
+			}
+		}
+		
 		c.setExpiry = function(key, hrs){
 			hrs = hrs || 24;
 			if(isNaN(parseInt(hrs)))
@@ -66,6 +72,9 @@ var CookieManager = (function(){
 				var expires = "Expires=" + new Date(values[key].expires).toGMTString();
 				
 				var cookie = kv + ";" + expires;
+				if(values[key].hasOwnProperty("path")){
+					cookie += ";Path=" + values[key].path;
+				}
 				if(values[key].httpOnly){
 					cookie += ";HttpOnly";
 				}
